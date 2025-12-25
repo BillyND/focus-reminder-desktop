@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, Notification, screen } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Notification,
+  screen,
+  session,
+} from "electron";
 import path from "path";
 
 // Constants
@@ -30,6 +37,8 @@ function createMainWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
     },
     icon: path.join(__dirname, "../public/icon.png"),
   });
@@ -263,7 +272,7 @@ function scheduleReminder(reminder: {
   message: string;
   icon: string;
   color: string;
-  type: typeof REMINDER_TYPE[keyof typeof REMINDER_TYPE];
+  type: (typeof REMINDER_TYPE)[keyof typeof REMINDER_TYPE];
   interval?: number;
   times?: string[];
   displayMinutes: number;
