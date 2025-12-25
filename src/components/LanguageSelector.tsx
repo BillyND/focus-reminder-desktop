@@ -8,7 +8,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Map language codes to country codes for flags
@@ -53,11 +52,35 @@ export default memo(function LanguageSelector() {
     setImageErrors((prev) => new Set(prev).add(countryCode));
   }, []);
 
+  // Get selected language info for trigger display
+  const selectedLang =
+    languages.find((l) => l.code === currentLanguage) || languages[0];
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("language")}>
-          <Globe className="h-4 w-4" />
+        <Button
+          variant="outline"
+          size="default"
+          aria-label={t("language")}
+          className="gap-2 pr-3 px-2 py-1 h-[fit-content]"
+        >
+          {/* Show flag or fallback text */}
+          {imageErrors.has(selectedLang.countryCode) ? (
+            <div className="w-5 h-4 bg-muted rounded-sm flex items-center justify-center text-xs">
+              {selectedLang.countryCode.toUpperCase()}
+            </div>
+          ) : (
+            <img
+              src={getFlagUrl(selectedLang.countryCode)}
+              alt={`${selectedLang.nativeName} flag`}
+              className="w-5 h-4 object-cover rounded-sm"
+              loading="lazy"
+              onError={() => handleImageError(selectedLang.countryCode)}
+              crossOrigin="anonymous"
+            />
+          )}
+          <span className="font-medium">{selectedLang.nativeName}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="end">
