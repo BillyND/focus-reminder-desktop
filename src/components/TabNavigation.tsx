@@ -33,7 +33,7 @@ export default memo(function TabNavigation() {
       onValueChange={handleValueChange}
       className="w-full"
     >
-      <TabsList className="w-full h-12 grid grid-cols-3">
+      <TabsList className="w-full grid grid-cols-3 rounded-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
