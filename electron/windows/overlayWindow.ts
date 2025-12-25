@@ -1,6 +1,7 @@
 import { BrowserWindow, screen } from "electron";
 import path from "path";
 import { getSoundFilePath } from "../config/paths";
+import { stopSoundFromMainWindow } from "../services/soundService";
 
 interface OverlayWindowData {
   window: BrowserWindow;
@@ -73,15 +74,25 @@ function stopOverlaySoundForWindow(window: BrowserWindow): void {
 
 function closeOverlayWindow(
   window: BrowserWindow,
-  reminderId: string | null
+  reminderId: string | null,
+  stopMainSound: boolean = true
 ): void {
   if (window && !window.isDestroyed()) {
     stopOverlaySoundForWindow(window);
+    // Only stop main window sound if explicitly requested (when user closes, not when replacing)
+    if (stopMainSound) {
+      stopSoundFromMainWindow().catch((error) => {
+        console.error(
+          "===> Error stopping main window sound on overlay close:",
+          error
+        );
+      });
+    }
     window.close();
   }
 }
 
-export function closeAllOverlays(): void {
+export function closeAllOverlays(stopMainSound: boolean = true): void {
   console.log("===> Closing all existing overlays");
 
   overlayWindowsByReminderId.forEach((windowsSet, reminderId) => {
@@ -89,7 +100,7 @@ export function closeAllOverlays(): void {
       if (data.autoCloseTimeout) {
         clearTimeout(data.autoCloseTimeout);
       }
-      closeOverlayWindow(data.window, reminderId);
+      closeOverlayWindow(data.window, reminderId, stopMainSound);
     });
   });
 
@@ -99,13 +110,23 @@ export function closeAllOverlays(): void {
   clearAutoCloseTimeout();
   stopOverlaySound();
 
+  // Only stop main window sound if explicitly requested
+  if (stopMainSound) {
+    stopSoundFromMainWindow().catch((error) => {
+      console.error("===> Error stopping main window sound:", error);
+    });
+  }
+
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.close();
     overlayWindow = null;
   }
 }
 
-export function closeOverlaysByReminderId(reminderId: string): void {
+export function closeOverlaysByReminderId(
+  reminderId: string,
+  stopMainSound: boolean = true
+): void {
   console.log(`===> Closing all overlays for reminder ID: ${reminderId}`);
 
   const windowsSet = overlayWindowsByReminderId.get(reminderId);
@@ -114,7 +135,7 @@ export function closeOverlaysByReminderId(reminderId: string): void {
       if (data.autoCloseTimeout) {
         clearTimeout(data.autoCloseTimeout);
       }
-      closeOverlayWindow(data.window, reminderId);
+      closeOverlayWindow(data.window, reminderId, stopMainSound);
     });
     overlayWindowsByReminderId.delete(reminderId);
   }
@@ -399,15 +420,16 @@ export function createOverlayWindow(
   color: string,
   displayMinutes: number,
   soundEnabled: boolean = true,
-  soundVolume: number = 30,
+  soundVolume: number,
   reminderId: string | null = null
 ): void {
   // Close existing overlays for the same reminder ID before creating new one
+  // Don't stop main sound when replacing overlay (sound is still playing for new notification)
   if (reminderId) {
-    closeOverlaysByReminderId(reminderId);
+    closeOverlaysByReminderId(reminderId, false);
   } else {
     // If no reminder ID, close all overlays (legacy behavior for test notifications)
-    closeAllOverlays();
+    closeAllOverlays(false);
   }
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;

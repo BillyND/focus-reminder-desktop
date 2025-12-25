@@ -48,7 +48,10 @@ export const useSettingsStore = create<SettingsStore>()(
 
         setSoundVolume: (volume) =>
           set((state) => ({
-            settings: { ...state.settings, soundVolume: volume },
+            settings: {
+              ...state.settings,
+              soundVolume: Math.max(1, Math.min(100, volume)),
+            },
           })),
 
         setShowSettings: (show) => set({ showSettings: show }),

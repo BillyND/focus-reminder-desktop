@@ -23,6 +23,7 @@ export interface ElectronAPI {
   }) => Promise<boolean>;
   closeOverlay: () => void;
   playNotificationSound: (volume: number) => void;
+  stopNotificationSound: () => void;
 }
 
 interface SettingsStoreAPI {

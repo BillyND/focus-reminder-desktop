@@ -18,6 +18,7 @@ function getSoundFilePath(): string {
 let audioElement: HTMLAudioElement | null = null;
 let soundInterval: NodeJS.Timeout | null = null;
 let audioLoadPromise: Promise<void> | null = null;
+let currentPlayPromise: Promise<void> | null = null;
 
 // Initialize audio element (lazy initialization)
 function getAudioElement(): HTMLAudioElement {
@@ -94,8 +95,62 @@ function getAudioElement(): HTMLAudioElement {
 }
 
 // Play sound with volume control (single play)
-export async function playNotificationSound(
-  volume: number = 30
+export async function playNotificationSound(volume: number): Promise<void> {
+  try {
+    const audio = getAudioElement();
+
+    // Wait for audio to be ready if not already loaded
+    if (audioLoadPromise && audio.readyState < 2) {
+      try {
+        await audioLoadPromise;
+      } catch (error) {
+        console.error("===> Audio failed to load:", error);
+        // Try to continue anyway - might work in some cases
+      }
+    }
+
+    // Set volume (0-100 to 0-1)
+    audio.volume = Math.max(0, Math.min(1, volume / 100));
+
+    // Reset to start
+    audio.currentTime = 0;
+
+    // Ensure audio is not paused before playing
+    if (audio.paused) {
+      // Audio was paused, need to ensure it can play
+      console.log("===> Audio was paused, resuming playback");
+    }
+
+    const playPromise = audio.play();
+    currentPlayPromise = playPromise;
+
+    if (playPromise !== undefined) {
+      await playPromise
+        .catch((error) => {
+          console.error("===> Error playing notification sound:", error);
+          // Common error: user interaction required
+          if (error.name === "NotAllowedError") {
+            console.error(
+              "===> Audio play blocked - user interaction required"
+            );
+          }
+          throw error;
+        })
+        .finally(() => {
+          if (currentPlayPromise === playPromise) {
+            currentPlayPromise = null;
+          }
+        });
+    }
+  } catch (error) {
+    console.error("===> Error in playNotificationSound:", error);
+    throw error;
+  }
+}
+
+// Play sound and return promise that resolves when sound ends
+export async function playNotificationSoundUntilEnd(
+  volume: number
 ): Promise<void> {
   try {
     const audio = getAudioElement();
@@ -113,29 +168,72 @@ export async function playNotificationSound(
     // Set volume (0-100 to 0-1)
     audio.volume = Math.max(0, Math.min(1, volume / 100));
 
-    // Reset to start and play
+    // Reset to start
     audio.currentTime = 0;
 
+    // Play and wait for it to end
     const playPromise = audio.play();
+    currentPlayPromise = playPromise;
+
     if (playPromise !== undefined) {
       await playPromise.catch((error) => {
         console.error("===> Error playing notification sound:", error);
-        // Common error: user interaction required
         if (error.name === "NotAllowedError") {
           console.error("===> Audio play blocked - user interaction required");
         }
         throw error;
       });
     }
+
+    // Wait for sound to end
+    return new Promise<void>((resolve, reject) => {
+      let isResolved = false;
+      let checkInterval: NodeJS.Timeout | null = null;
+
+      const cleanup = () => {
+        if (isResolved) return;
+        isResolved = true;
+        if (checkInterval) {
+          clearInterval(checkInterval);
+        }
+        audio.removeEventListener("ended", handleEnded);
+        audio.removeEventListener("error", handleError);
+        if (currentPlayPromise === playPromise) {
+          currentPlayPromise = null;
+        }
+      };
+
+      const handleEnded = () => {
+        cleanup();
+        resolve();
+      };
+
+      const handleError = () => {
+        cleanup();
+        reject(new Error("Audio playback error"));
+      };
+
+      checkInterval = setInterval(() => {
+        // Check if audio was stopped manually (paused and reset to start)
+        // This happens when stopAllSounds() is called
+        if (audio.paused && audio.currentTime === 0 && audio.readyState > 0) {
+          cleanup();
+          resolve();
+        }
+      }, 10);
+
+      audio.addEventListener("ended", handleEnded, { once: true });
+      audio.addEventListener("error", handleError, { once: true });
+    });
   } catch (error) {
-    console.error("===> Error in playNotificationSound:", error);
+    console.error("===> Error in playNotificationSoundUntilEnd:", error);
     throw error;
   }
 }
 
 // Play sound repeatedly with interval (for notifications)
 export function playNotificationSoundRepeatedly(
-  volume: number = 30,
+  volume: number,
   intervalMs: number = 5000
 ): () => void {
   // Stop any existing repeated sound
@@ -163,4 +261,49 @@ export function stopRepeatedSound(): void {
     clearInterval(soundInterval);
     soundInterval = null;
   }
+  if (audioElement) {
+    audioElement.pause();
+    audioElement.currentTime = 0;
+  }
+}
+
+// Stop all sounds (both single and repeated)
+export function stopAllSounds(): void {
+  console.log("===> Stopping all sounds");
+
+  // Stop interval first
+  if (soundInterval) {
+    clearInterval(soundInterval);
+    soundInterval = null;
+  }
+
+  // Stop audio element immediately
+  if (audioElement) {
+    try {
+      // Pause immediately to stop sound
+      audioElement.pause();
+
+      // Reset to beginning
+      audioElement.currentTime = 0;
+
+      // Set volume to 0 temporarily to ensure no sound plays
+      // But don't keep it at 0, just pause is enough
+
+      console.log("===> Audio stopped");
+    } catch (error) {
+      console.error("===> Error stopping all sounds:", error);
+      // Try to pause anyway even if other operations fail
+      try {
+        if (audioElement) {
+          audioElement.pause();
+          audioElement.currentTime = 0;
+        }
+      } catch (e) {
+        console.error("===> Error in fallback stop:", e);
+      }
+    }
+  }
+
+  // Clear play promise reference
+  currentPlayPromise = null;
 }

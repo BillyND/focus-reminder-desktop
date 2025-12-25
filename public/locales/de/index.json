@@ -42,6 +42,7 @@
   "notification-volume": "Benachrichtigungslautstärke",
   "notification-volume-description": "Lautstärke einstellen",
   "test-sound": "Ton testen",
+  "stop-sound": "Stoppen",
   "data-management": "Datenverwaltung",
   "export-data": "Daten exportieren",
   "import-data": "Daten importieren",

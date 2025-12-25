@@ -42,6 +42,7 @@
   "notification-volume": "Volumen de notificación",
   "notification-volume-description": "Ajustar el volumen",
   "test-sound": "Probar sonido",
+  "stop-sound": "Detener",
   "data-management": "Gestión de datos",
   "export-data": "Exportar datos",
   "import-data": "Importar datos",

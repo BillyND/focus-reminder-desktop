@@ -31,7 +31,7 @@ export const DEFAULTS = {
   TIME: "09:00",
   INTERVAL: 30,
   DISPLAY_MINUTES: 1,
-  SOUND_VOLUME: 30,
+  SOUND_VOLUME: 50,
   COLOR_INDEX: 0,
 } as const;
 

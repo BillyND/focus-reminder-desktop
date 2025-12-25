@@ -42,6 +42,7 @@
   "notification-volume": "Notifikationsvolumen",
   "notification-volume-description": "Juster lydstyrken",
   "test-sound": "Test lyd",
+  "stop-sound": "Stop",
   "data-management": "Datahåndtering",
   "export-data": "Eksporter data",
   "import-data": "Importer data",

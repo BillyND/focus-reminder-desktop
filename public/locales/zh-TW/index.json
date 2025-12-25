@@ -42,6 +42,7 @@
   "notification-volume": "通知音量",
   "notification-volume-description": "調整音量",
   "test-sound": "測試聲音",
+  "stop-sound": "停止",
   "data-management": "資料管理",
   "export-data": "匯出資料",
   "import-data": "匯入資料",

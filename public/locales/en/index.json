@@ -44,6 +44,7 @@
   "notification-volume": "Notification Volume",
   "notification-volume-description": "Adjust sound volume",
   "test-sound": "Test Sound",
+  "stop-sound": "Stop",
   "data-management": "Data Management",
   "export-data": "Export Data",
   "import-data": "Import Data",

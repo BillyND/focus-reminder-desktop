@@ -42,6 +42,7 @@
   "notification-volume": "Meldingsvolume",
   "notification-volume-description": "Geluidsvolume aanpassen",
   "test-sound": "Geluid testen",
+  "stop-sound": "Stoppen",
   "data-management": "Gegevensbeheer",
   "export-data": "Gegevens exporteren",
   "import-data": "Gegevens importeren",

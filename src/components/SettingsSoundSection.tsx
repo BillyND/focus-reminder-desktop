@@ -1,17 +1,17 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Volume2 } from "lucide-react";
+import { Volume2, Square } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { DEFAULTS } from "@/constants";
-import { playNotificationSound } from "@/utils/sound";
+import { playNotificationSoundUntilEnd, stopAllSounds } from "@/utils/sound";
 
 interface SettingsSoundSectionProps {
   soundEnabled: boolean;
-  soundVolume: number;
+  soundVolume?: number;
   onToggleSound: () => void;
   onVolumeChange: (volume: number) => void;
 }
@@ -23,16 +23,41 @@ export const SettingsSoundSection = memo(function SettingsSoundSection({
   onVolumeChange,
 }: SettingsSoundSectionProps) {
   const { t } = useTranslation();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleTestSound = useCallback(async () => {
+    if (isPlaying) {
+      stopAllSounds();
+      setIsPlaying(false);
+      return;
+    }
+
     try {
       const currentVolume = soundVolume || DEFAULTS.SOUND_VOLUME;
-      await playNotificationSound(currentVolume);
-      console.log("===> Test sound played successfully");
+      setIsPlaying(true);
+      await playNotificationSoundUntilEnd(currentVolume);
+      console.log("===> Test sound finished");
+      setIsPlaying(false);
     } catch (error) {
       console.error("===> Failed to play test sound:", error);
+      setIsPlaying(false);
     }
-  }, [soundVolume]);
+  }, [soundVolume, isPlaying]);
+
+  useEffect(() => {
+    if (!soundEnabled && isPlaying) {
+      stopAllSounds();
+      setIsPlaying(false);
+    }
+  }, [soundEnabled, isPlaying]);
+
+  useEffect(() => {
+    return () => {
+      if (isPlaying) {
+        stopAllSounds();
+      }
+    };
+  }, [isPlaying]);
 
   return (
     <>
@@ -75,19 +100,24 @@ export const SettingsSoundSection = memo(function SettingsSoundSection({
             <Slider
               value={[soundVolume || DEFAULTS.SOUND_VOLUME]}
               onValueChange={(value) => onVolumeChange(value[0])}
+              min={1}
               max={100}
               step={1}
               className="w-full"
             />
             <div className="flex justify-end pt-2">
               <Button
-                variant="outline"
+                variant={isPlaying ? "default" : "outline"}
                 size="sm"
                 onClick={handleTestSound}
                 className="gap-2"
               >
-                <Volume2 className="h-4 w-4" />
-                {t("test-sound")}
+                {isPlaying ? (
+                  <Square className="h-4 w-4" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+                {isPlaying ? t("stop-sound") : t("test-sound")}
               </Button>
             </div>
           </div>

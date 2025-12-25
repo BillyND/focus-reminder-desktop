@@ -42,6 +42,7 @@
   "notification-volume": "Aviseringsvolym",
   "notification-volume-description": "Justera ljudvolymen",
   "test-sound": "Testa ljud",
+  "stop-sound": "Stoppa",
   "data-management": "Datahantering",
   "export-data": "Exportera data",
   "import-data": "Importera data",

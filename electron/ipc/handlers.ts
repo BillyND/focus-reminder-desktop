@@ -6,7 +6,10 @@ import {
   clearAllSchedulers,
 } from "../services/reminderScheduler";
 import { showNotification } from "../services/notificationService";
-import { playSoundFromMainWindow } from "../services/soundService";
+import {
+  playSoundFromMainWindow,
+  stopSoundFromMainWindow,
+} from "../services/soundService";
 import {
   minimizeMainWindow,
   maximizeMainWindow,
@@ -60,6 +63,12 @@ export function registerIpcHandlers(): void {
   ipcMain.on("play-notification-sound", (_, volume: number) => {
     playSoundFromMainWindow(volume).catch((error) => {
       console.error("===> Error playing sound via IPC:", error);
+    });
+  });
+
+  ipcMain.on("stop-notification-sound", () => {
+    stopSoundFromMainWindow().catch((error) => {
+      console.error("===> Error stopping sound via IPC:", error);
     });
   });
 

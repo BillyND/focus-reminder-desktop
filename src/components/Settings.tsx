@@ -72,7 +72,7 @@ export default memo(function Settings() {
       <div className="max-w-2xl mx-auto space-y-6">
         <SettingsSoundSection
           soundEnabled={settings.soundEnabled}
-          soundVolume={settings.soundVolume || 30}
+          soundVolume={settings.soundVolume}
           onToggleSound={toggleSound}
           onVolumeChange={setSoundVolume}
         />
