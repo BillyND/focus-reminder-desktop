@@ -1,45 +1,50 @@
+import { memo, useCallback } from "react";
 import { Reminder } from "@/types/reminder";
 import { useReminderStore } from "@/store/reminderStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
+import { MESSAGES } from "@/constants";
+import { getRepeatText } from "@/utils/reminder";
 import { Play, Pause, Edit2, Trash2 } from "lucide-react";
 
 interface ReminderCardProps {
   reminder: Reminder;
 }
 
-export default function ReminderCard({ reminder }: ReminderCardProps) {
+export const ReminderCard = memo(function ReminderCard({
+  reminder,
+}: ReminderCardProps) {
   const { deleteReminder, toggleReminder, setEditingReminder, globalEnabled } =
     useReminderStore();
 
-  const getRepeatText = () => {
-    if (reminder.type === "interval" && reminder.interval) {
-      return `Repeat every ${reminder.interval} minutes`;
-    }
-    if (
-      reminder.type === "scheduled" &&
-      reminder.times &&
-      reminder.times.length > 0
-    ) {
-      if (reminder.times.length === 1) {
-        return `Daily at ${reminder.times[0]}`;
-      }
-      return `${reminder.times.length} times a day`;
-    }
-    return "";
-  };
-
-  const handleTest = () => {
+  const handleTest = useCallback(() => {
     window.electronAPI?.testReminder({
-      emoji: reminder.icon,
+      icon: reminder.icon,
       message: reminder.message,
       color: reminder.color,
-      durationMinutes: reminder.displayMinutes,
-    } as any);
-  };
+      displayMinutes: reminder.displayMinutes,
+    });
+  }, [
+    reminder.icon,
+    reminder.message,
+    reminder.color,
+    reminder.displayMinutes,
+  ]);
+
+  const handleToggle = useCallback(() => {
+    toggleReminder(reminder.id);
+  }, [reminder.id, toggleReminder]);
+
+  const handleEdit = useCallback(() => {
+    setEditingReminder(reminder);
+  }, [reminder, setEditingReminder]);
+
+  const handleDelete = useCallback(() => {
+    deleteReminder(reminder.id);
+  }, [reminder.id, deleteReminder]);
 
   const isActive = reminder.enabled && globalEnabled;
+  const repeatText = getRepeatText(reminder);
 
   return (
     <Card
@@ -69,7 +74,7 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
               style={{ backgroundColor: reminder.color }}
             />
             <span className="text-xs text-muted-foreground truncate">
-              {getRepeatText()}
+              {repeatText}
             </span>
             <span className="text-xs text-muted-foreground">
               • {reminder.displayMinutes}m
@@ -83,15 +88,15 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
             onClick={handleTest}
             variant="ghost"
             size="icon"
-            title="Test reminder"
+            title={MESSAGES.TEST_REMINDER}
           >
             <Play className="h-4 w-4" />
           </Button>
           <Button
-            onClick={() => toggleReminder(reminder.id)}
+            onClick={handleToggle}
             variant={isActive ? "default" : "ghost"}
             size="icon"
-            title={isActive ? "Disable" : "Enable"}
+            title={isActive ? MESSAGES.DISABLE : MESSAGES.ENABLE}
           >
             {isActive ? (
               <Pause className="h-4 w-4" />
@@ -100,18 +105,18 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
             )}
           </Button>
           <Button
-            onClick={() => setEditingReminder(reminder)}
+            onClick={handleEdit}
             variant="ghost"
             size="icon"
-            title="Edit"
+            title={MESSAGES.EDIT}
           >
             <Edit2 className="h-4 w-4" />
           </Button>
           <Button
-            onClick={() => deleteReminder(reminder.id)}
+            onClick={handleDelete}
             variant="ghost"
             size="icon"
-            title="Delete"
+            title={MESSAGES.DELETE}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -124,4 +129,4 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
       )}
     </Card>
   );
-}
+});

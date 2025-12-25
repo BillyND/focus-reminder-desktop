@@ -1,9 +1,11 @@
+import { ReminderType } from "./common";
+
 export interface Reminder {
   id: string;
   message: string;
   icon: string; // Changed from emoji to icon for consistency
   color: string;
-  type: "interval" | "scheduled";
+  type: ReminderType;
   interval?: number; // Minutes for interval type
   times?: string[]; // Array of "HH:mm" for scheduled type
   displayMinutes: number; // Changed from durationMinutes
@@ -24,19 +26,6 @@ export interface AppData {
 }
 
 export type ReminderFormData = Omit<Reminder, "id">;
-
-// Legacy support - keep for migration
-export interface LegacyReminder {
-  id: string;
-  message: string;
-  emoji: string;
-  color: string;
-  type: "interval" | "fixed";
-  intervalMinutes?: number;
-  fixedTime?: string;
-  durationMinutes: number;
-  enabled: boolean;
-}
 
 export const PRESET_EMOJIS = [
   "💧",

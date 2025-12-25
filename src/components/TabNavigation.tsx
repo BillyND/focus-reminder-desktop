@@ -1,8 +1,9 @@
+import { memo, useCallback } from "react";
 import { useReminderStore } from "@/store/reminderStore";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Plus } from "lucide-react";
-
-type TabType = "reminders" | "add";
+import { TabType } from "@/types/common";
+import { TAB } from "@/constants";
+import { Bell, Plus, Settings } from "lucide-react";
 
 interface Tab {
   id: TabType;
@@ -11,20 +12,28 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
-  { id: "reminders", label: "Reminders", icon: Bell },
-  { id: "add", label: "Add New", icon: Plus },
+  { id: TAB.REMINDERS, label: "Reminders", icon: Bell },
+  { id: TAB.ADD, label: "Add New", icon: Plus },
+  { id: TAB.SETTINGS, label: "Settings", icon: Settings },
 ];
 
-export default function TabNavigation() {
+export default memo(function TabNavigation() {
   const { activeTab, setActiveTab } = useReminderStore();
+
+  const handleValueChange = useCallback(
+    (value: string) => {
+      setActiveTab(value as TabType);
+    },
+    [setActiveTab]
+  );
 
   return (
     <Tabs
       value={activeTab}
-      onValueChange={(value) => setActiveTab(value as TabType)}
+      onValueChange={handleValueChange}
       className="w-full"
     >
-      <TabsList className="w-full h-12 grid grid-cols-2">
+      <TabsList className="w-full h-12 grid grid-cols-3">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -34,11 +43,11 @@ export default function TabNavigation() {
               className="flex items-center gap-2"
             >
               <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span>{tab.label}</span>
             </TabsTrigger>
           );
         })}
       </TabsList>
     </Tabs>
   );
-}
+});

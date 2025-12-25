@@ -1,6 +1,12 @@
 import { app, BrowserWindow, ipcMain, Notification, screen } from "electron";
 import path from "path";
 
+// Constants
+const REMINDER_TYPE = {
+  INTERVAL: "interval",
+  SCHEDULED: "scheduled",
+} as const;
+
 let mainWindow: BrowserWindow | null = null;
 let overlayWindow: BrowserWindow | null = null;
 let reminderIntervals: Map<string, NodeJS.Timeout> = new Map();
@@ -41,10 +47,10 @@ function createMainWindow() {
 }
 
 function createOverlayWindow(
-  emoji: string,
+  icon: string,
   message: string,
   color: string,
-  durationMinutes: number
+  displayMinutes: number
 ) {
   if (overlayWindow) {
     overlayWindow.close();
@@ -145,7 +151,7 @@ function createOverlayWindow(
         .progress-fill {
           height: 100%;
           background: ${color};
-          animation: shrink ${durationMinutes * 60}s linear forwards;
+          animation: shrink ${displayMinutes * 60}s linear forwards;
         }
         @keyframes shrink {
           from { width: 100%; }
@@ -156,7 +162,7 @@ function createOverlayWindow(
     <body>
       <div class="container">
         <div class="color-indicator"></div>
-        <div class="emoji">${emoji}</div>
+        <div class="emoji">${icon}</div>
         <div class="message">${message}</div>
         <div class="progress-bar">
           <div class="progress-fill"></div>
@@ -193,7 +199,7 @@ function createOverlayWindow(
       overlayWindow.close();
       overlayWindow = null;
     }
-  }, durationMinutes * 60 * 1000);
+  }, displayMinutes * 60 * 1000);
 
   overlayWindow.on("closed", () => {
     clearTimeout(autoCloseTimeout);
@@ -226,16 +232,16 @@ function createOverlayWindow(
 }
 
 function showNotification(
-  emoji: string,
+  icon: string,
   message: string,
   color: string,
-  durationMinutes: number
+  displayMinutes: number
 ) {
   // Try native notification first
   if (Notification.isSupported()) {
     const notification = new Notification({
       title: "Focus Reminder Desktop",
-      body: `${emoji} ${message}`,
+      body: `${icon} ${message}`,
       silent: false,
       urgency: "critical",
     });
@@ -244,27 +250,23 @@ function showNotification(
 
     notification.on("click", () => {
       // Show overlay on click for stronger reminder
-      createOverlayWindow(emoji, message, color, durationMinutes);
+      createOverlayWindow(icon, message, color, displayMinutes);
     });
   }
 
   // Also show overlay for stronger reminder
-  createOverlayWindow(emoji, message, color, durationMinutes);
+  createOverlayWindow(icon, message, color, displayMinutes);
 }
 
 function scheduleReminder(reminder: {
   id: string;
   message: string;
-  icon?: string;
-  emoji?: string; // Legacy support
+  icon: string;
   color: string;
-  type: "interval" | "scheduled" | "fixed"; // 'fixed' for legacy
+  type: typeof REMINDER_TYPE[keyof typeof REMINDER_TYPE];
   interval?: number;
-  intervalMinutes?: number; // Legacy
   times?: string[];
-  fixedTime?: string; // Legacy
-  displayMinutes?: number;
-  durationMinutes?: number; // Legacy
+  displayMinutes: number;
   enabled: boolean;
 }) {
   // Clear existing scheduler for this reminder
@@ -272,17 +274,12 @@ function scheduleReminder(reminder: {
 
   if (!reminder.enabled) return;
 
-  const icon = reminder.icon || reminder.emoji || "💧";
-  const displayMinutes =
-    reminder.displayMinutes || reminder.durationMinutes || 1;
+  const icon = reminder.icon || "💧";
+  const displayMinutes = reminder.displayMinutes || 1;
 
-  if (
-    reminder.type === "interval" &&
-    (reminder.interval || reminder.intervalMinutes)
-  ) {
+  if (reminder.type === REMINDER_TYPE.INTERVAL && reminder.interval) {
     // Interval-based reminder
-    const intervalMinutes = reminder.interval || reminder.intervalMinutes || 30;
-    const intervalMs = intervalMinutes * 60 * 1000;
+    const intervalMs = reminder.interval * 60 * 1000;
 
     const intervalId = setInterval(() => {
       showNotification(icon, reminder.message, reminder.color, displayMinutes);
@@ -290,19 +287,11 @@ function scheduleReminder(reminder: {
 
     reminderIntervals.set(reminder.id, intervalId);
   } else if (
-    (reminder.type === "scheduled" &&
-      reminder.times &&
-      reminder.times.length > 0) ||
-    (reminder.type === "fixed" && reminder.fixedTime)
+    reminder.type === REMINDER_TYPE.SCHEDULED &&
+    reminder.times &&
+    reminder.times.length > 0
   ) {
-    // Scheduled reminder with multiple times or legacy fixed time
-    const times =
-      reminder.type === "scheduled" && reminder.times
-        ? reminder.times
-        : reminder.fixedTime
-        ? [reminder.fixedTime]
-        : [];
-
+    // Scheduled reminder with multiple times
     // Check every minute
     const checkInterval = setInterval(() => {
       const now = new Date();
@@ -310,7 +299,7 @@ function scheduleReminder(reminder: {
       const lastTrigger = lastFixedTimeTriggers.get(reminder.id);
 
       // Check if current time matches any scheduled time
-      const shouldTrigger = times.some((time) => {
+      const shouldTrigger = reminder.times!.some((time) => {
         const [hours, minutes] = time.split(":").map(Number);
         return now.getHours() === hours && now.getMinutes() === minutes;
       });
@@ -369,16 +358,16 @@ ipcMain.handle("clear-all-reminders", () => {
 
 ipcMain.handle(
   "show-notification",
-  (_, { emoji, message, color, durationMinutes }) => {
-    showNotification(emoji, message, color, durationMinutes);
+  (_, { icon, message, color, displayMinutes }) => {
+    showNotification(icon, message, color, displayMinutes);
     return true;
   }
 );
 
 ipcMain.handle(
   "test-reminder",
-  (_, { emoji, message, color, durationMinutes }) => {
-    showNotification(emoji, message, color, durationMinutes);
+  (_, { icon, message, color, displayMinutes }) => {
+    showNotification(icon, message, color, displayMinutes);
     return true;
   }
 );

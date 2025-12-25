@@ -3,12 +3,12 @@ import { contextBridge, ipcRenderer } from 'electron'
 export interface Reminder {
   id: string
   message: string
-  emoji: string
+  icon: string
   color: string
-  type: 'interval' | 'fixed'
-  intervalMinutes?: number
-  fixedTime?: string
-  durationMinutes: number
+  type: 'interval' | 'scheduled'
+  interval?: number
+  times?: string[]
+  displayMinutes: number
   enabled: boolean
 }
 
@@ -24,9 +24,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   clearAllReminders: () => ipcRenderer.invoke('clear-all-reminders'),
 
   // Notifications
-  showNotification: (data: { emoji: string; message: string; color: string; durationMinutes: number }) =>
+  showNotification: (data: { icon: string; message: string; color: string; displayMinutes: number }) =>
     ipcRenderer.invoke('show-notification', data),
-  testReminder: (data: { emoji: string; message: string; color: string; durationMinutes: number }) =>
+  testReminder: (data: { icon: string; message: string; color: string; displayMinutes: number }) =>
     ipcRenderer.invoke('test-reminder', data),
 
   // Overlay
@@ -43,8 +43,8 @@ declare global {
       scheduleReminder: (reminder: Reminder) => Promise<boolean>
       clearReminder: (id: string) => Promise<boolean>
       clearAllReminders: () => Promise<boolean>
-      showNotification: (data: { emoji: string; message: string; color: string; durationMinutes: number }) => Promise<boolean>
-      testReminder: (data: { emoji: string; message: string; color: string; durationMinutes: number }) => Promise<boolean>
+      showNotification: (data: { icon: string; message: string; color: string; displayMinutes: number }) => Promise<boolean>
+      testReminder: (data: { icon: string; message: string; color: string; displayMinutes: number }) => Promise<boolean>
       closeOverlay: () => void
     }
   }

@@ -2,86 +2,20 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { Reminder, ReminderFormData } from "../types/reminder";
-
-// Helper to convert Reminder to Electron-compatible format
-function toElectronReminder(reminder: Reminder): any {
-  return {
-    id: reminder.id,
-    message: reminder.message,
-    icon: reminder.icon,
-    emoji: reminder.icon, // For backward compatibility
-    color: reminder.color,
-    type: reminder.type === "scheduled" ? "fixed" : reminder.type, // Map scheduled to fixed for electron
-    interval: reminder.interval,
-    intervalMinutes: reminder.interval, // For backward compatibility
-    times: reminder.times,
-    fixedTime: reminder.times?.[0], // For backward compatibility
-    displayMinutes: reminder.displayMinutes,
-    durationMinutes: reminder.displayMinutes, // For backward compatibility
-    enabled: reminder.enabled,
-  };
-}
-
-// Helper to convert legacy reminder to new format
-function convertLegacyReminder(legacy: any): Reminder {
-  // Check if already new format
-  if (
-    legacy.icon !== undefined &&
-    (legacy.type === "interval" || legacy.type === "scheduled")
-  ) {
-    return legacy as Reminder;
-  }
-
-  // Convert legacy format
-  let newReminder: Reminder;
-
-  if (legacy.type === "interval" || (!legacy.type && legacy.intervalMinutes)) {
-    newReminder = {
-      id: legacy.id,
-      message: legacy.message,
-      icon: legacy.icon || legacy.emoji || "💧",
-      color: legacy.color,
-      type: "interval",
-      interval: legacy.interval || legacy.intervalMinutes || 30,
-      displayMinutes: legacy.displayMinutes || legacy.durationMinutes || 1,
-      enabled: legacy.enabled !== undefined ? legacy.enabled : true,
-    };
-  } else if (
-    legacy.type === "scheduled" ||
-    (legacy.type === "fixed" && legacy.fixedTime)
-  ) {
-    newReminder = {
-      id: legacy.id,
-      message: legacy.message,
-      icon: legacy.icon || legacy.emoji || "💧",
-      color: legacy.color,
-      type: "scheduled",
-      times:
-        legacy.times || (legacy.fixedTime ? [legacy.fixedTime] : ["09:00"]),
-      displayMinutes: legacy.displayMinutes || legacy.durationMinutes || 1,
-      enabled: legacy.enabled !== undefined ? legacy.enabled : true,
-    };
-  } else {
-    // Default to interval
-    newReminder = {
-      id: legacy.id,
-      message: legacy.message,
-      icon: legacy.icon || legacy.emoji || "💧",
-      color: legacy.color,
-      type: "interval",
-      interval: 30,
-      displayMinutes: legacy.displayMinutes || legacy.durationMinutes || 1,
-      enabled: legacy.enabled !== undefined ? legacy.enabled : true,
-    };
-  }
-
-  return newReminder;
-}
+import { TabType } from "../types/common";
+import {
+  STORAGE_KEYS,
+  TAB,
+  DEFAULTS,
+  APP_VERSION,
+  REMINDER_TYPE,
+} from "../constants";
+import { toElectronReminder, validateReminderForm } from "../utils/reminder";
 
 interface ReminderStore {
   reminders: Reminder[];
   globalEnabled: boolean;
-  activeTab: "reminders" | "add";
+  activeTab: TabType;
   editingReminder: Reminder | null;
 
   // Actions
@@ -90,7 +24,7 @@ interface ReminderStore {
   deleteReminder: (id: string) => void;
   toggleReminder: (id: string) => void;
   toggleGlobalEnabled: () => void;
-  setActiveTab: (tab: "reminders" | "add") => void;
+  setActiveTab: (tab: TabType) => void;
   setEditingReminder: (reminder: Reminder | null) => void;
 
   // Scheduler sync
@@ -107,46 +41,22 @@ export const useReminderStore = create<ReminderStore>()(
     (set, get) => ({
       reminders: [],
       globalEnabled: true,
-      activeTab: "reminders",
+      activeTab: TAB.REMINDERS,
       editingReminder: null,
 
       addReminder: (data) => {
-        // Convert form data to reminder format
-        let newReminder: Reminder;
-
-        if (
-          "icon" in data &&
-          (data.type === "interval" || data.type === "scheduled")
-        ) {
-          // New format
-          newReminder = {
-            ...data,
-            id: uuidv4(),
-          } as Reminder;
-        } else {
-          // Legacy format - convert
-          const legacy = data as any;
-          newReminder = {
-            id: uuidv4(),
-            message: legacy.message,
-            icon: legacy.emoji || legacy.icon || "💧",
-            color: legacy.color,
-            displayMinutes:
-              legacy.durationMinutes || legacy.displayMinutes || 1,
-            enabled: legacy.enabled ?? true,
-            type: legacy.type === "fixed" ? "scheduled" : "interval",
-            interval:
-              legacy.type === "interval"
-                ? legacy.intervalMinutes || legacy.interval || 30
-                : undefined,
-            times:
-              legacy.type === "fixed"
-                ? legacy.fixedTime
-                  ? [legacy.fixedTime]
-                  : ["09:00"]
-                : undefined,
-          };
+        // Validate form data
+        const validation = validateReminderForm(data);
+        if (!validation.valid) {
+          console.error("===> Validation error", validation.error);
+          return;
         }
+
+        // Convert form data to reminder format
+        const newReminder: Reminder = {
+          ...data,
+          id: uuidv4(),
+        };
 
         set((state) => ({
           reminders: [...state.reminders, newReminder],
@@ -251,22 +161,22 @@ export const useReminderStore = create<ReminderStore>()(
       exportData: () => {
         const { reminders, globalEnabled } = get();
         // Dynamic import to avoid circular dependency
-        const settingsStore = (window as any).__settingsStore;
+        const settingsStore = window.__settingsStore;
         const settings = settingsStore?.getState()?.settings || {
           darkMode: false,
           soundEnabled: true,
-          soundVolume: 30,
+          soundVolume: DEFAULTS.SOUND_VOLUME,
         };
 
         const data = {
-          reminders: reminders.map((r) => convertLegacyReminder(r)),
+          reminders,
           settings: {
             darkMode: settings.darkMode,
             enabled: globalEnabled,
             soundEnabled: settings.soundEnabled,
-            soundVolume: settings.soundVolume || 30,
+            soundVolume: settings.soundVolume || DEFAULTS.SOUND_VOLUME,
           },
-          version: "1.1.0",
+          version: APP_VERSION,
         };
         return JSON.stringify(data, null, 2);
       },
@@ -276,18 +186,39 @@ export const useReminderStore = create<ReminderStore>()(
           const data = JSON.parse(dataString);
           if (!data.reminders || !data.settings) return false;
 
-          // Convert and import reminders
-          const convertedReminders = data.reminders.map(convertLegacyReminder);
-          set({ reminders: convertedReminders });
+          // Import reminders (validate they are in correct format)
+          const validReminders = (data.reminders as unknown[]).filter(
+            (r): r is Reminder =>
+              typeof r === "object" &&
+              r !== null &&
+              "id" in r &&
+              typeof r.id === "string" &&
+              "message" in r &&
+              typeof r.message === "string" &&
+              "icon" in r &&
+              typeof r.icon === "string" &&
+              "color" in r &&
+              typeof r.color === "string" &&
+              "type" in r &&
+              typeof r.type === "string" &&
+              (r.type === REMINDER_TYPE.INTERVAL ||
+                r.type === REMINDER_TYPE.SCHEDULED) &&
+              "displayMinutes" in r &&
+              typeof r.displayMinutes === "number" &&
+              "enabled" in r &&
+              typeof r.enabled === "boolean"
+          );
+
+          set({ reminders: validReminders });
           set({ globalEnabled: data.settings.enabled !== false });
 
           // Import settings
-          const settingsStore = (window as any).__settingsStore;
+          const settingsStore = window.__settingsStore;
           if (settingsStore) {
             settingsStore.getState().updateSettings({
               darkMode: data.settings.darkMode ?? false,
               soundEnabled: data.settings.soundEnabled ?? true,
-              soundVolume: data.settings.soundVolume ?? 30,
+              soundVolume: data.settings.soundVolume ?? DEFAULTS.SOUND_VOLUME,
             });
           }
 
@@ -302,26 +233,37 @@ export const useReminderStore = create<ReminderStore>()(
       resetAll: () => {
         window.electronAPI?.clearAllReminders();
         set({ reminders: [], globalEnabled: true });
-        const settingsStore = (window as any).__settingsStore;
+        const settingsStore = window.__settingsStore;
         if (settingsStore) {
           settingsStore.getState().updateSettings({
             darkMode: false,
             soundEnabled: true,
-            soundVolume: 30,
+            soundVolume: DEFAULTS.SOUND_VOLUME,
           });
         }
       },
     }),
     {
-      name: "focus-reminder-desktop-storage",
+      name: STORAGE_KEYS.REMINDER_STORE,
       partialize: (state) => ({
         reminders: state.reminders,
         globalEnabled: state.globalEnabled,
       }),
       onRehydrateStorage: () => (state) => {
-        // Migrate legacy reminders on load
+        // Validate reminders on load
         if (state?.reminders) {
-          state.reminders = state.reminders.map(convertLegacyReminder);
+          state.reminders = state.reminders.filter(
+            (r) =>
+              r.id &&
+              r.message &&
+              r.icon &&
+              r.color &&
+              r.type &&
+              (r.type === REMINDER_TYPE.INTERVAL ||
+                r.type === REMINDER_TYPE.SCHEDULED) &&
+              r.displayMinutes !== undefined &&
+              r.enabled !== undefined
+          );
         }
       },
     }

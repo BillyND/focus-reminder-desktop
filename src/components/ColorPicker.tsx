@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { PRESET_COLORS } from "@/types/reminder";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
@@ -7,17 +8,23 @@ interface ColorPickerProps {
   onSelect: (color: string) => void;
 }
 
-export default function ColorPicker({
+export default memo(function ColorPicker({
   selectedColor,
   onSelect,
 }: ColorPickerProps) {
+  const handleColorClick = useCallback(
+    (color: string) => {
+      onSelect(color);
+    },
+    [onSelect]
+  );
   return (
     <div className="flex gap-2">
       {PRESET_COLORS.map((color) => (
         <Button
           key={color}
           type="button"
-          onClick={() => onSelect(color)}
+          onClick={() => handleColorClick(color)}
           variant={selectedColor === color ? "default" : "outline"}
           size="icon"
           className="w-10 h-10"
@@ -28,4 +35,4 @@ export default function ColorPicker({
       ))}
     </div>
   );
-}
+});

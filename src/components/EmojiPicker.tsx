@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { PRESET_EMOJIS } from "@/types/reminder";
+import { LIMITS, MESSAGES } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -10,29 +11,32 @@ interface EmojiPickerProps {
   onClose: () => void;
 }
 
-export default function EmojiPicker({
+export default memo(function EmojiPicker({
   selectedEmoji,
   onSelect,
   onClose,
 }: EmojiPickerProps) {
   const [customEmoji, setCustomEmoji] = useState("");
 
-  const handleCustomEmojiSubmit = () => {
+  const handleCustomEmojiSubmit = useCallback(() => {
     if (customEmoji.trim()) {
       onSelect(customEmoji.trim());
       setCustomEmoji("");
     }
-  };
+  }, [customEmoji, onSelect]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleCustomEmojiSubmit();
-    }
-    if (e.key === "Escape") {
-      onClose();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleCustomEmojiSubmit();
+      }
+      if (e.key === "Escape") {
+        onClose();
+      }
+    },
+    [handleCustomEmojiSubmit, onClose]
+  );
 
   return (
     <Card className="p-4">
@@ -58,15 +62,15 @@ export default function EmojiPicker({
           value={customEmoji}
           onChange={(e) => setCustomEmoji(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Paste custom emoji..."
-          maxLength={4}
+          placeholder={MESSAGES.PASTE_CUSTOM_EMOJI}
+          maxLength={LIMITS.MAX_EMOJI_LENGTH}
         />
         <Button
           type="button"
           onClick={handleCustomEmojiSubmit}
           disabled={!customEmoji.trim()}
         >
-          OK
+          {MESSAGES.OK}
         </Button>
       </div>
 
@@ -77,8 +81,8 @@ export default function EmojiPicker({
         variant="secondary"
         className="w-full mt-3"
       >
-        Close
+        {MESSAGES.CLOSE}
       </Button>
     </Card>
   );
-}
+});

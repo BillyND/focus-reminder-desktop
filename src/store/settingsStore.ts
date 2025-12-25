@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { AppSettings } from "../types/reminder";
+import { STORAGE_KEYS, DEFAULTS } from "../constants";
 
 interface SettingsStore {
   settings: AppSettings;
@@ -19,7 +20,7 @@ export const useSettingsStore = create<SettingsStore>()(
     (set, get) => {
       // Expose store to window for cross-store access
       if (typeof window !== "undefined") {
-        (window as any).__settingsStore = { getState: get };
+        window.__settingsStore = { getState: get };
       }
 
       return {
@@ -27,7 +28,7 @@ export const useSettingsStore = create<SettingsStore>()(
           darkMode: false, // Default to light mode
           enabled: true,
           soundEnabled: true,
-          soundVolume: 30,
+          soundVolume: DEFAULTS.SOUND_VOLUME,
         },
         showSettings: false,
 
@@ -58,7 +59,7 @@ export const useSettingsStore = create<SettingsStore>()(
       };
     },
     {
-      name: "focus-reminder-settings",
+      name: STORAGE_KEYS.SETTINGS_STORE,
       partialize: (state) => ({
         settings: state.settings,
       }),

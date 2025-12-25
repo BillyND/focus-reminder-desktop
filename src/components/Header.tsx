@@ -1,37 +1,43 @@
+import { memo, useCallback } from "react";
 import { useSettingsStore } from "@/store/settingsStore";
+import { useReminderStore } from "@/store/reminderStore";
 import { Button } from "@/components/ui/button";
+import { TAB } from "@/constants";
 import { Settings, Sun, Moon, Minus, Maximize2, X } from "lucide-react";
 
-export default function Header() {
-  // const { globalEnabled, toggleGlobalEnabled } = useReminderStore();
-  const { settings, toggleDarkMode, showSettings, setShowSettings } =
-    useSettingsStore();
+export default memo(function Header() {
+  const { settings, toggleDarkMode } = useSettingsStore();
+  const { setActiveTab } = useReminderStore();
 
-  const handleMinimize = () => {
+  const handleMinimize = useCallback(() => {
     window.electronAPI?.minimizeWindow();
-  };
+  }, []);
 
-  const handleMaximize = () => {
+  const handleMaximize = useCallback(() => {
     window.electronAPI?.maximizeWindow();
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     window.electronAPI?.closeWindow();
-  };
+  }, []);
+
+  const handleSettingsClick = useCallback(() => {
+    setActiveTab(TAB.SETTINGS);
+  }, [setActiveTab]);
 
   return (
     <header className="draggable flex items-center justify-between px-4 py-3 border-b transition-colors">
       <div className="flex items-center gap-3">
-        <span className="text-2xl">💧</span>
+        {/* <span className="text-2xl">💧</span>
         <div>
           <h1 className="text-lg font-semibold">Health Reminder</h1>
-        </div>
+        </div> */}
       </div>
 
       <div className="non-draggable flex items-center gap-2">
         {/* Settings Button */}
         <Button
-          onClick={() => setShowSettings(!showSettings)}
+          onClick={handleSettingsClick}
           variant="ghost"
           size="icon"
           aria-label="Settings"
@@ -83,4 +89,4 @@ export default function Header() {
       </div>
     </header>
   );
-}
+});

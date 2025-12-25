@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useReminderStore } from "@/store/reminderStore";
+import { FILE_NAMES, MESSAGES, DEFAULTS } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,22 +15,22 @@ export default function Settings() {
   const { exportData, importData, resetAll } = useReminderStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const data = exportData();
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `focus-reminder-backup-${
+    a.download = `${FILE_NAMES.BACKUP_PREFIX}${
       new Date().toISOString().split("T")[0]
-    }.json`;
+    }${FILE_NAMES.BACKUP_EXTENSION}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [exportData]);
 
-  const handleImport = () => {
+  const handleImport = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "application/json";
@@ -40,26 +41,26 @@ export default function Settings() {
         reader.onload = (event) => {
           const data = event.target?.result as string;
           if (importData(data)) {
-            alert("Data imported successfully!");
+            alert(MESSAGES.DATA_IMPORTED_SUCCESS);
           } else {
-            alert("Error: Invalid data!");
+            alert(MESSAGES.DATA_IMPORTED_ERROR);
           }
         };
         reader.readAsText(file);
       }
     };
     input.click();
-  };
+  }, [importData]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     if (showResetConfirm) {
       resetAll();
       setShowResetConfirm(false);
-      alert("All data has been reset!");
+      alert(MESSAGES.DATA_RESET_SUCCESS);
     } else {
       setShowResetConfirm(true);
     }
-  };
+  }, [showResetConfirm, resetAll]);
 
   return (
     <div className="h-full overflow-y-auto p-6">
@@ -69,10 +70,10 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <Label className="text-base font-semibold cursor-pointer">
-                Dark Mode
+                {MESSAGES.DARK_MODE}
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Easier on the eyes in low light
+                {MESSAGES.DARK_MODE_DESCRIPTION}
               </p>
             </div>
             <Switch
@@ -88,10 +89,10 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <Label className="text-base font-semibold cursor-pointer">
-                Notification Sound
+                {MESSAGES.NOTIFICATION_SOUND}
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Play sound when showing reminders
+                {MESSAGES.NOTIFICATION_SOUND_DESCRIPTION}
               </p>
             </div>
             <Switch
@@ -109,18 +110,18 @@ export default function Settings() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label className="text-base font-semibold">
-                    Notification Volume
+                    {MESSAGES.NOTIFICATION_VOLUME}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Adjust sound volume
+                    {MESSAGES.NOTIFICATION_VOLUME_DESCRIPTION}
                   </p>
                 </div>
                 <span className="text-primary font-medium ml-4">
-                  {settings.soundVolume || 30}%
+                  {settings.soundVolume || DEFAULTS.SOUND_VOLUME}%
                 </span>
               </div>
               <Slider
-                value={[settings.soundVolume || 30]}
+                value={[settings.soundVolume || DEFAULTS.SOUND_VOLUME]}
                 onValueChange={(value) => setSoundVolume(value[0])}
                 max={100}
                 step={1}
@@ -132,7 +133,9 @@ export default function Settings() {
 
         {/* Data Management */}
         <Card className="p-4">
-          <h3 className="text-base font-semibold mb-4">Data Management</h3>
+          <h3 className="text-base font-semibold mb-4">
+            {MESSAGES.DATA_MANAGEMENT}
+          </h3>
           <div className="space-y-3">
             <div className="flex gap-3">
               <Button
@@ -141,7 +144,7 @@ export default function Settings() {
                 className="flex-1"
               >
                 <Download className="mr-2 h-4 w-4" />
-                Export Data
+                {MESSAGES.EXPORT_DATA}
               </Button>
               <Button
                 onClick={handleImport}
@@ -149,7 +152,7 @@ export default function Settings() {
                 className="flex-1"
               >
                 <Upload className="mr-2 h-4 w-4" />
-                Import Data
+                {MESSAGES.IMPORT_DATA}
               </Button>
             </div>
             <Button
@@ -158,7 +161,7 @@ export default function Settings() {
               className="w-full"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              {showResetConfirm ? "Confirm reset?" : "Reset All"}
+              {showResetConfirm ? MESSAGES.CONFIRM_RESET : MESSAGES.RESET_ALL}
             </Button>
           </div>
         </Card>
