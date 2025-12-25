@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Overlay
   closeOverlay: () => ipcRenderer.send("close-overlay"),
+  closeOverlayByReminderId: (reminderId: string) =>
+    ipcRenderer.send("close-overlay-by-reminder-id", reminderId),
 
   // Sound
   playNotificationSound: (volume: number) =>
@@ -69,6 +71,7 @@ declare global {
         displayMinutes: number;
       }) => Promise<boolean>;
       closeOverlay: () => void;
+      closeOverlayByReminderId: (reminderId: string) => void;
     };
   }
 }
