@@ -61,6 +61,7 @@
   "danish": "Deens",
   "dutch": "Nederlands",
   "vietnamese": "Vietnamees",
-  "language": "Taal"
+  "language": "Taal",
+  "duration-minutes": "{{minute}} minuten"
 }
 

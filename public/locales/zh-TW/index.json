@@ -61,6 +61,7 @@
   "danish": "丹麥語",
   "dutch": "荷蘭語",
   "vietnamese": "越南語",
-  "language": "語言"
+  "language": "語言",
+  "duration-minutes": "{{minute}} 分鐘"
 }
 

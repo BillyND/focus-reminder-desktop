@@ -1,6 +1,7 @@
 import { Reminder, ReminderFormData } from "@/types/reminder";
 import { ReminderType } from "@/types/common";
-import { REMINDER_TYPE } from "@/constants";
+import { REMINDER_TYPE, DEFAULTS } from "@/constants";
+import { v4 as uuidv4 } from "uuid";
 import i18n from "@/i18n/config";
 
 // ============================================
@@ -96,4 +97,32 @@ export const validateReminderForm = (
     return { valid: false, error: i18n.t("add-time-required") };
   }
   return { valid: true };
+};
+
+// ============================================
+// DEFAULT REMINDERS
+// ============================================
+export const createDefaultReminders = (): Reminder[] => {
+  return [
+    {
+      id: uuidv4(),
+      message: "Time to drink some water!",
+      icon: "💧",
+      color: "#3b82f6", // blue
+      type: REMINDER_TYPE.INTERVAL,
+      interval: 30,
+      displayMinutes: DEFAULTS.DISPLAY_MINUTES,
+      enabled: true,
+    },
+    {
+      id: uuidv4(),
+      message: "Get up and move around a bit!",
+      icon: "🏃",
+      color: "#22c55e", // green
+      type: REMINDER_TYPE.INTERVAL,
+      interval: 60,
+      displayMinutes: DEFAULTS.DISPLAY_MINUTES,
+      enabled: true,
+    },
+  ];
 };

@@ -1,5 +1,6 @@
 import { memo, ReactNode } from "react";
 import { Card } from "@/components/ui/card";
+import { Play } from "lucide-react";
 
 interface ReminderCardBaseProps {
   icon: string;
@@ -34,15 +35,13 @@ export const ReminderCardBase = memo(function ReminderCardBase({
         style={{ backgroundColor: color }}
       />
 
-      <div className="flex items-start gap-3 pl-3 p-4">
+      <div className="flex items-start gap-3 pl-3 p-4 pr-12">
         {/* Icon */}
         <div className="text-3xl flex-shrink-0 mt-1">{icon}</div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-base leading-snug mb-1">
-            {message}
-          </p>
+          <p className="font-semibold text-base leading-snug mb-1">{message}</p>
           {metadata && (
             <div className="flex items-center gap-2">
               <span
@@ -53,20 +52,17 @@ export const ReminderCardBase = memo(function ReminderCardBase({
             </div>
           )}
         </div>
-
-        {/* Actions */}
-        {actions && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {actions}
-          </div>
-        )}
       </div>
 
-      {/* Status indicator */}
+      {/* Active status indicator - top right */}
       {isActive && (
-        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+        <div className="absolute top-1 right-1 flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+        </div>
       )}
+
+      {/* Menu button - far right corner */}
+      {actions && <div className="absolute top-3 right-3 z-10">{actions}</div>}
     </Card>
   );
 });
-

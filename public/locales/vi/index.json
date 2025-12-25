@@ -61,6 +61,7 @@
   "danish": "Tiếng Đan Mạch",
   "dutch": "Tiếng Hà Lan",
   "vietnamese": "Tiếng Việt",
-  "language": "Ngôn ngữ"
+  "language": "Ngôn ngữ",
+  "duration-minutes": "{{minute}} phút"
 }
 

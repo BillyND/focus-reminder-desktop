@@ -61,6 +61,7 @@
   "danish": "Dänisch",
   "dutch": "Niederländisch",
   "vietnamese": "Vietnamesisch",
-  "language": "Sprache"
+  "language": "Sprache",
+  "duration-minutes": "{{minute}} Minuten"
 }
 

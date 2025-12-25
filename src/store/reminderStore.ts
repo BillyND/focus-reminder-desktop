@@ -10,7 +10,11 @@ import {
   APP_VERSION,
   REMINDER_TYPE,
 } from "../constants";
-import { toElectronReminder, validateReminderForm } from "../utils/reminder";
+import {
+  toElectronReminder,
+  validateReminderForm,
+  createDefaultReminders,
+} from "../utils/reminder";
 
 interface ReminderStore {
   reminders: Reminder[];
@@ -246,8 +250,10 @@ export const useReminderStore = create<ReminderStore>()(
         globalEnabled: state.globalEnabled,
       }),
       onRehydrateStorage: () => (state) => {
+        if (!state) return;
+
         // Validate reminders on load
-        if (state?.reminders) {
+        if (state.reminders) {
           state.reminders = state.reminders.filter(
             (r) =>
               r.id &&
@@ -260,6 +266,13 @@ export const useReminderStore = create<ReminderStore>()(
               r.displayMinutes !== undefined &&
               r.enabled !== undefined
           );
+        }
+
+        // Add default reminders if this is first install (no reminders exist)
+        if (!state.reminders || state.reminders.length === 0) {
+          const defaultReminders = createDefaultReminders();
+          state.reminders = defaultReminders;
+          // Note: Scheduling will be handled by syncAllReminders in App.tsx
         }
       },
     }
