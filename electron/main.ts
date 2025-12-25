@@ -239,12 +239,16 @@ function showNotification(emoji: string, message: string, color: string, duratio
 function scheduleReminder(reminder: {
   id: string
   message: string
-  emoji: string
+  icon?: string
+  emoji?: string // Legacy support
   color: string
-  type: 'interval' | 'fixed'
-  intervalMinutes?: number
-  fixedTime?: string
-  durationMinutes: number
+  type: 'interval' | 'scheduled' | 'fixed' // 'fixed' for legacy
+  interval?: number
+  intervalMinutes?: number // Legacy
+  times?: string[]
+  fixedTime?: string // Legacy
+  displayMinutes?: number
+  durationMinutes?: number // Legacy
   enabled: boolean
 }) {
   // Clear existing scheduler for this reminder
@@ -252,27 +256,44 @@ function scheduleReminder(reminder: {
 
   if (!reminder.enabled) return
 
-  if (reminder.type === 'interval' && reminder.intervalMinutes) {
+  const icon = reminder.icon || reminder.emoji || '💧'
+  const displayMinutes = reminder.displayMinutes || reminder.durationMinutes || 1
+
+  if (reminder.type === 'interval' && (reminder.interval || reminder.intervalMinutes)) {
     // Interval-based reminder
-    const intervalMs = reminder.intervalMinutes * 60 * 1000
+    const intervalMinutes = reminder.interval || reminder.intervalMinutes || 30
+    const intervalMs = intervalMinutes * 60 * 1000
 
     const intervalId = setInterval(() => {
-      showNotification(reminder.emoji, reminder.message, reminder.color, reminder.durationMinutes)
+      showNotification(icon, reminder.message, reminder.color, displayMinutes)
     }, intervalMs)
 
     reminderIntervals.set(reminder.id, intervalId)
-  } else if (reminder.type === 'fixed' && reminder.fixedTime) {
-    // Fixed time reminder - check every minute
+  } else if ((reminder.type === 'scheduled' && reminder.times && reminder.times.length > 0) ||
+             (reminder.type === 'fixed' && reminder.fixedTime)) {
+    // Scheduled reminder with multiple times or legacy fixed time
+    const times = reminder.type === 'scheduled' && reminder.times 
+      ? reminder.times 
+      : reminder.fixedTime 
+        ? [reminder.fixedTime] 
+        : []
+
+    // Check every minute
     const checkInterval = setInterval(() => {
       const now = new Date()
-      const [hours, minutes] = reminder.fixedTime!.split(':').map(Number)
       const currentTimeKey = `${now.getHours()}:${now.getMinutes()}`
       const lastTrigger = lastFixedTimeTriggers.get(reminder.id)
 
+      // Check if current time matches any scheduled time
+      const shouldTrigger = times.some((time) => {
+        const [hours, minutes] = time.split(':').map(Number)
+        return now.getHours() === hours && now.getMinutes() === minutes
+      })
+
       // Only trigger if it's the right time and we haven't triggered in this minute
-      if (now.getHours() === hours && now.getMinutes() === minutes && lastTrigger !== currentTimeKey) {
+      if (shouldTrigger && lastTrigger !== currentTimeKey) {
         lastFixedTimeTriggers.set(reminder.id, currentTimeKey)
-        showNotification(reminder.emoji, reminder.message, reminder.color, reminder.durationMinutes)
+        showNotification(icon, reminder.message, reminder.color, displayMinutes)
       }
     }, 60000) // Check every minute
 

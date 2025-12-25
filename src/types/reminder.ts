@@ -1,36 +1,82 @@
 export interface Reminder {
-  id: string
-  message: string
-  emoji: string
-  color: string
-  type: 'interval' | 'fixed'
-  intervalMinutes?: number
-  fixedTime?: string
-  durationMinutes: number
-  enabled: boolean
+  id: string;
+  message: string;
+  icon: string; // Changed from emoji to icon for consistency
+  color: string;
+  type: "interval" | "scheduled";
+  interval?: number; // Minutes for interval type
+  times?: string[]; // Array of "HH:mm" for scheduled type
+  displayMinutes: number; // Changed from durationMinutes
+  enabled: boolean;
 }
 
-export type ReminderFormData = Omit<Reminder, 'id'>
+export interface AppSettings {
+  darkMode: boolean;
+  enabled: boolean;
+  soundEnabled: boolean;
+  soundVolume?: number; // 0-100
+}
+
+export interface AppData {
+  reminders: Reminder[];
+  settings: AppSettings;
+  version: string;
+}
+
+export type ReminderFormData = Omit<Reminder, "id">;
+
+// Legacy support - keep for migration
+export interface LegacyReminder {
+  id: string;
+  message: string;
+  emoji: string;
+  color: string;
+  type: "interval" | "fixed";
+  intervalMinutes?: number;
+  fixedTime?: string;
+  durationMinutes: number;
+  enabled: boolean;
+}
 
 export const PRESET_EMOJIS = [
-  '💧', '🏃', '👀', '🧘', '💪', '🎯',
-  '☕', '🍎', '📚', '✨', '🌟', '⏰',
-  '🔔', '💡', '🎵', '🌈', '❤️', '🔥',
-  '🌙', '☀️', '🌸', '🍀', '🎮', '📱',
-]
+  "💧",
+  "🏃",
+  "👀",
+  "🧘",
+  "💪",
+  "🎯",
+  "☕",
+  "🍎",
+  "📚",
+  "✨",
+  "🌟",
+  "⏰",
+  "🔔",
+  "💡",
+  "🎵",
+  "🌈",
+  "❤️",
+  "🔥",
+  "🌙",
+  "☀️",
+  "🌸",
+  "🍀",
+  "🎮",
+  "📱",
+];
 
 export const PRESET_COLORS = [
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#3b82f6', // blue
-  '#22c55e', // green
-  '#eab308', // yellow
-  '#f97316', // orange
-]
+  "#8b5cf6", // purple
+  "#ec4899", // pink
+  "#3b82f6", // blue
+  "#22c55e", // green
+  "#eab308", // yellow
+  "#f97316", // orange
+];
 
 export const DURATION_OPTIONS = [
-  { value: 1, label: '1p' },
-  { value: 2, label: '2p' },
-  { value: 3, label: '3p' },
-  { value: 5, label: '5p' },
-]
+  { value: 1, label: "1p" },
+  { value: 2, label: "2p" },
+  { value: 3, label: "3p" },
+  { value: 5, label: "5p" },
+];

@@ -28,7 +28,7 @@ export default function EmojiPicker({ selectedEmoji, onSelect, onClose }: EmojiP
   }
 
   return (
-    <div className="bg-dark-card border border-dark-border rounded-xl p-4 animate-in">
+    <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 animate-in">
       {/* Preset Emojis */}
       <div className="grid grid-cols-6 gap-2 mb-4">
         {PRESET_EMOJIS.map((emoji) => (
@@ -38,8 +38,8 @@ export default function EmojiPicker({ selectedEmoji, onSelect, onClose }: EmojiP
             onClick={() => onSelect(emoji)}
             className={`w-10 h-10 text-xl flex items-center justify-center rounded-lg transition-all ${
               selectedEmoji === emoji
-                ? 'bg-accent-purple scale-110'
-                : 'hover:bg-dark-hover'
+                ? 'bg-blue-500 dark:bg-accent-purple scale-110'
+                : 'hover:bg-gray-100 dark:hover:bg-dark-hover'
             }`}
           >
             {emoji}
@@ -72,7 +72,7 @@ export default function EmojiPicker({ selectedEmoji, onSelect, onClose }: EmojiP
       <button
         type="button"
         onClick={onClose}
-        className="w-full mt-3 text-sm text-dark-muted hover:text-dark-text transition-colors"
+        className="w-full mt-3 text-sm text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-dark-text transition-colors"
       >
         Đóng
       </button>

@@ -1,32 +1,32 @@
-import { useReminderStore } from '../store/reminderStore'
-import ReminderCard from './ReminderCard'
+import { useReminderStore } from "../store/reminderStore";
+import ReminderCard from "./ReminderCard";
 
 export default function ReminderList() {
-  const { reminders, setActiveTab } = useReminderStore()
+  const { reminders, setActiveTab } = useReminderStore();
 
   if (reminders.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+      <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-dark-bg">
         <span className="text-6xl mb-4">📭</span>
-        <h2 className="text-xl font-semibold text-dark-text mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-text mb-2">
           Chưa có nhắc nhở nào
         </h2>
-        <p className="text-dark-muted mb-6">
+        <p className="text-gray-500 dark:text-dark-muted mb-6">
           Tạo nhắc nhở đầu tiên để bắt đầu
         </p>
         <button
-          onClick={() => setActiveTab('add')}
+          onClick={() => setActiveTab("add")}
           className="btn btn-primary flex items-center gap-2"
         >
           <span>➕</span>
           <span>Thêm nhắc nhở</span>
         </button>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 space-y-3">
+    <div className="h-full overflow-y-auto p-4 space-y-3 bg-white dark:bg-dark-bg">
       {reminders.map((reminder, index) => (
         <div
           key={reminder.id}
@@ -37,5 +37,5 @@ export default function ReminderList() {
         </div>
       ))}
     </div>
-  )
+  );
 }
