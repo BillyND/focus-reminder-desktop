@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
-import { ReminderFormData } from "@/types/reminder";
 import { validateReminderForm } from "@/utils/reminder";
 import { useReminderForm } from "@/hooks/useReminderForm";
 import { useTimeManagement } from "@/hooks/useTimeManagement";

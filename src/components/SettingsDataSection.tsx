@@ -1,6 +1,5 @@
 import { memo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { FILE_NAMES } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, Upload, Trash2 } from "lucide-react";
@@ -30,19 +29,11 @@ export const SettingsDataSection = memo(function SettingsDataSection({
       <h3 className="text-base font-semibold mb-4">{t("data-management")}</h3>
       <div className="space-y-3">
         <div className="flex gap-3">
-          <Button
-            onClick={onExport}
-            variant="outline"
-            className="flex-1"
-          >
+          <Button onClick={onExport} variant="outline" className="flex-1">
             <Upload className="mr-2 h-4 w-4" />
             {t("export-data")}
           </Button>
-          <Button
-            onClick={onImport}
-            variant="outline"
-            className="flex-1"
-          >
+          <Button onClick={onImport} variant="outline" className="flex-1">
             <Download className="mr-2 h-4 w-4" />
             {t("import-data")}
           </Button>
@@ -70,4 +61,3 @@ export const SettingsDataSection = memo(function SettingsDataSection({
     </Card>
   );
 });
-

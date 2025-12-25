@@ -1,6 +1,7 @@
 {
   "name": "focus-reminder-desktop",
   "version": "1.0.0",
+  "author": "Billy",
   "description": "A lightweight cross-platform desktop reminder app built with Electron, React, and TypeScript",
   "main": "dist-electron/main.js",
   "scripts": {
