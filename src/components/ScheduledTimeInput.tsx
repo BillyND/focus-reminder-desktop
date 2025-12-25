@@ -35,7 +35,7 @@ export const ScheduledTimeInput = memo(function ScheduledTimeInput({
         </Button>
       </div>
       {times.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 mt-4">
           {times.map((time) => (
             <Badge key={time} variant="secondary" className="gap-1">
               {time}
@@ -53,4 +53,3 @@ export const ScheduledTimeInput = memo(function ScheduledTimeInput({
     </div>
   );
 });
-

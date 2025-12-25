@@ -16,6 +16,16 @@ export const TAB = {
 } as const;
 
 // ============================================
+// THEME TYPES
+// ============================================
+export const THEME = {
+  LIGHT: "light",
+  DARK: "dark",
+} as const;
+
+export type ThemeType = (typeof THEME)[keyof typeof THEME];
+
+// ============================================
 // STORAGE KEYS
 // ============================================
 export const STORAGE_KEYS = {

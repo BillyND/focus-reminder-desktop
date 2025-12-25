@@ -61,7 +61,7 @@ export const ReminderCard = memo(function ReminderCard({
 
       <div className="flex items-start gap-3 pl-3 p-4">
         {/* Icon */}
-        <div className="text-3xl flex-shrink-0 mt-0.5">{reminder.icon}</div>
+        <div className="text-3xl flex-shrink-0 mt-1">{reminder.icon}</div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">

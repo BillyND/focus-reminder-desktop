@@ -84,7 +84,7 @@ export default function AddReminder() {
 
   return (
     <div className="h-full overflow-y-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <ReminderFormFields
           formData={formData}
           onFormDataChange={handleFormDataChange}

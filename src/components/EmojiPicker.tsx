@@ -79,7 +79,7 @@ export default memo(function EmojiPicker({
         type="button"
         onClick={onClose}
         variant="secondary"
-        className="w-full mt-3"
+        className="w-full mt-4"
       >
         {MESSAGES.CLOSE}
       </Button>

@@ -28,7 +28,7 @@ export const ReminderPreview = memo(function ReminderPreview({
             <p className="font-semibold">
               {formData.message || MESSAGES.REMINDER_CONTENT}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               {previewText} • {formData.displayMinutes}m
             </p>
           </div>
@@ -37,4 +37,3 @@ export const ReminderPreview = memo(function ReminderPreview({
     </div>
   );
 });
-
