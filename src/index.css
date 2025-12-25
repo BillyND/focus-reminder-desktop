@@ -53,6 +53,7 @@ body,
   height: 100%;
   width: 100%;
   overflow: hidden;
+  background-color: white;
 }
 
 body {
@@ -60,6 +61,7 @@ body {
     "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: white;
 }
 
 /* Custom scrollbar - WebKit browsers (Chrome, Edge, Safari) */

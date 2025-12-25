@@ -1,6 +1,5 @@
 import { memo, ReactNode } from "react";
 import { Card } from "@/components/ui/card";
-import { Play } from "lucide-react";
 
 interface ReminderCardBaseProps {
   icon: string;

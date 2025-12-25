@@ -5,6 +5,9 @@ import {
   Notification,
   screen,
   session,
+  Tray,
+  Menu,
+  nativeImage,
 } from "electron";
 import path from "path";
 
@@ -16,12 +19,18 @@ const REMINDER_TYPE = {
 
 let mainWindow: BrowserWindow | null = null;
 let overlayWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
 let reminderIntervals: Map<string, NodeJS.Timeout> = new Map();
 let fixedTimeCheckers: Map<string, NodeJS.Timeout> = new Map();
 let lastFixedTimeTriggers: Map<string, string> = new Map(); // Track last trigger time to prevent duplicates
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 const isDev = !!VITE_DEV_SERVER_URL;
+
+function getIconPath() {
+  return path.join(__dirname, "../public/icon.png");
+}
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -41,7 +50,7 @@ function createMainWindow() {
       webSecurity: true,
       allowRunningInsecureContent: false,
     },
-    icon: path.join(__dirname, "../public/icon.png"),
+    icon: getIconPath(),
   });
 
   // Show window when ready to prevent visual flash
@@ -60,6 +69,15 @@ function createMainWindow() {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+  });
+
+  // Prevent window from closing, hide to tray instead
+  mainWindow.on("close", (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow?.hide();
+      console.log("===> Window hidden to tray");
+    }
   });
 }
 
@@ -357,6 +375,62 @@ function clearAllSchedulers() {
   lastFixedTimeTriggers.clear();
 }
 
+function createTray() {
+  const icon = nativeImage.createFromPath(getIconPath());
+
+  // Resize icon for tray (16x16 for better visibility)
+  const trayIcon = icon.resize({ width: 16, height: 16 });
+  tray = new Tray(trayIcon);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Show Window",
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        } else {
+          createMainWindow();
+        }
+      },
+    },
+    {
+      label: "Hide Window",
+      click: () => {
+        mainWindow?.hide();
+      },
+    },
+    { type: "separator" },
+    {
+      label: "Quit",
+      click: () => {
+        isQuitting = true;
+        clearAllSchedulers();
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip("Focus Reminder Desktop");
+  tray.setContextMenu(contextMenu);
+
+  // Double click to show/hide window
+  tray.on("double-click", () => {
+    if (mainWindow?.isVisible()) {
+      mainWindow.hide();
+    } else {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      } else {
+        createMainWindow();
+      }
+    }
+  });
+
+  console.log("===> System tray created");
+}
+
 // IPC Handlers
 ipcMain.handle("schedule-reminder", (_, reminder) => {
   scheduleReminder(reminder);
@@ -409,27 +483,42 @@ ipcMain.on("window-maximize", () => {
 });
 
 ipcMain.on("window-close", () => {
-  mainWindow?.close();
+  // Hide to tray instead of closing
+  mainWindow?.hide();
 });
 
 // App lifecycle
 app.whenReady().then(() => {
+  // Request notification permission
+  if (Notification.isSupported()) {
+    console.log("===> Notifications supported");
+  }
+
+  createTray();
   createMainWindow();
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow === null) {
       createMainWindow();
+    } else {
+      mainWindow.show();
+      mainWindow.focus();
     }
   });
 });
 
+// Keep app running in background - don't quit when window is closed
 app.on("window-all-closed", () => {
-  clearAllSchedulers();
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  // Don't quit - keep running in background for notifications
+  // Only quit explicitly via tray menu or before-quit
+  console.log("===> All windows closed, keeping app running in background");
 });
 
 app.on("before-quit", () => {
+  isQuitting = true;
   clearAllSchedulers();
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
 });
