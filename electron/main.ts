@@ -33,6 +33,7 @@ function createMainWindow() {
     transparent: false,
     backgroundColor: "#1a1a2e",
     resizable: true,
+    show: false, // Don't show until ready
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -41,6 +42,13 @@ function createMainWindow() {
       allowRunningInsecureContent: false,
     },
     icon: path.join(__dirname, "../public/icon.png"),
+  });
+
+  // Show window when ready to prevent visual flash
+  mainWindow.once("ready-to-show", () => {
+    if (mainWindow) {
+      mainWindow.show();
+    }
   });
 
   if (VITE_DEV_SERVER_URL) {

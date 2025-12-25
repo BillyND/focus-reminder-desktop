@@ -13,8 +13,13 @@ function App() {
   const { activeTab, syncAllReminders, editingReminder } = useReminderStore();
 
   useEffect(() => {
-    // Sync all reminders when app starts
-    syncAllReminders();
+    // Sync all reminders when app starts - run async to not block render
+    const syncReminders = async () => {
+      // Small delay to ensure window is ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      syncAllReminders();
+    };
+    syncReminders();
   }, [syncAllReminders]);
 
   const content = useMemo(() => {

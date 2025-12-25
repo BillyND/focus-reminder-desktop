@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Reminder } from "@/types/reminder";
 import { useReminderStore } from "@/store/reminderStore";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getRepeatText } from "@/utils/reminder";
 import { Play, Pause, Edit2, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface ReminderCardProps {
   reminder: Reminder;
@@ -17,6 +18,7 @@ export const ReminderCard = memo(function ReminderCard({
   const { t } = useTranslation();
   const { deleteReminder, toggleReminder, setEditingReminder, globalEnabled } =
     useReminderStore();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleTest = useCallback(() => {
     window.electronAPI?.testReminder({
@@ -41,6 +43,10 @@ export const ReminderCard = memo(function ReminderCard({
   }, [reminder, setEditingReminder]);
 
   const handleDelete = useCallback(() => {
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
     deleteReminder(reminder.id);
   }, [reminder.id, deleteReminder]);
 
@@ -128,6 +134,17 @@ export const ReminderCard = memo(function ReminderCard({
       {isActive && (
         <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
       )}
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title={t("confirm-delete")}
+        description={t("delete-confirm-description")}
+        confirmText={t("delete")}
+        variant="destructive"
+      />
     </Card>
   );
 });

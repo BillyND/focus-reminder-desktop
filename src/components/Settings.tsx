@@ -9,18 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Download, Upload, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -145,34 +135,25 @@ export default function Settings() {
                 {t("import-data")}
               </Button>
             </div>
-            <AlertDialog
-              open={isResetDialogOpen}
-              onOpenChange={setIsResetDialogOpen}
-            >
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("reset-all")}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t("confirm-reset")}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t("reset-confirm-description")}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleResetConfirm}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    {t("reset-all")}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <div>
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setIsResetDialogOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("reset-all")}
+              </Button>
+              <ConfirmDialog
+                open={isResetDialogOpen}
+                onOpenChange={setIsResetDialogOpen}
+                onConfirm={handleResetConfirm}
+                title={t("confirm-reset")}
+                description={t("reset-confirm-description")}
+                confirmText={t("reset-all")}
+                variant="destructive"
+              />
+            </div>
           </div>
         </Card>
       </div>

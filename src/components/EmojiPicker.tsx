@@ -4,18 +4,15 @@ import { PRESET_EMOJIS } from "@/types/reminder";
 import { LIMITS } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 interface EmojiPickerProps {
   selectedEmoji: string;
   onSelect: (emoji: string) => void;
-  onClose: () => void;
 }
 
 export default memo(function EmojiPicker({
   selectedEmoji,
   onSelect,
-  onClose,
 }: EmojiPickerProps) {
   const { t } = useTranslation();
   const [customEmoji, setCustomEmoji] = useState("");
@@ -33,17 +30,14 @@ export default memo(function EmojiPicker({
         e.preventDefault();
         handleCustomEmojiSubmit();
       }
-      if (e.key === "Escape") {
-        onClose();
-      }
     },
-    [handleCustomEmojiSubmit, onClose]
+    [handleCustomEmojiSubmit]
   );
 
   return (
-    <Card className="p-4">
+    <div className="p-4 space-y-4">
       {/* Preset Emojis */}
-      <div className="grid grid-cols-6 gap-2 mb-4">
+      <div className="grid grid-cols-6 gap-2">
         {PRESET_EMOJIS.map((emoji) => (
           <Button
             key={emoji}
@@ -75,16 +69,6 @@ export default memo(function EmojiPicker({
           {t("ok")}
         </Button>
       </div>
-
-      {/* Close button */}
-      <Button
-        type="button"
-        onClick={onClose}
-        variant="secondary"
-        className="w-full mt-4"
-      >
-        {t("close")}
-      </Button>
-    </Card>
+    </div>
   );
 });

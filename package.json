@@ -69,7 +69,8 @@
       "target": [
         "nsis"
       ],
-      "icon": "public/icon.png"
+      "icon": "public/icon.png",
+      "sign": null
     },
     "mac": {
       "target": [

@@ -20,7 +20,6 @@ export default function EditModal() {
   const { editingReminder, setEditingReminder, updateReminder } =
     useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData | null>(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useEffect(() => {
     if (editingReminder) {
@@ -93,14 +92,6 @@ export default function EditModal() {
     [formData]
   );
 
-  const handleEmojiSelect = useCallback(
-    (icon: string) => {
-      handleFormDataChange({ icon });
-      setShowEmojiPicker(false);
-    },
-    [handleFormDataChange]
-  );
-
   const isFormValid = useMemo(
     () => (formData?.message.trim().length ?? 0) > 0,
     [formData?.message]
@@ -125,10 +116,6 @@ export default function EditModal() {
           <ReminderFormFields
             formData={formData}
             onFormDataChange={handleFormDataChange}
-            showEmojiPicker={showEmojiPicker}
-            onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
-            onEmojiSelect={handleEmojiSelect}
-            onEmojiPickerClose={() => setShowEmojiPicker(false)}
             onAddTime={addTime}
             onRemoveTime={removeTime}
             onTimeChange={handleTimeChange}

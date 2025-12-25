@@ -1,10 +1,15 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ReminderFormData } from "@/types/reminder";
 import { REMINDER_TYPE, DEFAULTS } from "@/constants";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import EmojiPicker from "./EmojiPicker";
 import ColorPicker from "./ColorPicker";
 import { ReminderTypeSelector } from "./ReminderTypeSelector";
@@ -15,10 +20,6 @@ import { DurationSelector } from "./DurationSelector";
 interface ReminderFormFieldsProps {
   formData: ReminderFormData;
   onFormDataChange: (data: Partial<ReminderFormData>) => void;
-  showEmojiPicker: boolean;
-  onToggleEmojiPicker: () => void;
-  onEmojiSelect: (icon: string) => void;
-  onEmojiPickerClose: () => void;
   onAddTime: () => void;
   onRemoveTime: (index: number) => void;
   onTimeChange: (index: number, time: string) => void;
@@ -27,15 +28,17 @@ interface ReminderFormFieldsProps {
 export const ReminderFormFields = memo(function ReminderFormFields({
   formData,
   onFormDataChange,
-  showEmojiPicker,
-  onToggleEmojiPicker,
-  onEmojiSelect,
-  onEmojiPickerClose,
   onAddTime,
   onRemoveTime,
   onTimeChange,
 }: ReminderFormFieldsProps) {
   const { t } = useTranslation();
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+
+  const handleEmojiSelect = (icon: string) => {
+    onFormDataChange({ icon });
+    setIsEmojiPickerOpen(false);
+  };
 
   return (
     <>
@@ -55,25 +58,23 @@ export const ReminderFormFields = memo(function ReminderFormFields({
       <div className="space-y-2">
         <Label>{t("icon")}</Label>
         <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            onClick={onToggleEmojiPicker}
-            variant="outline"
-            size="lg"
-          >
-            <span className="text-3xl">{formData.icon}</span>
-          </Button>
+          <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline" size="lg">
+                <span className="text-3xl">{formData.icon}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <EmojiPicker
+                selectedEmoji={formData.icon}
+                onSelect={handleEmojiSelect}
+              />
+            </PopoverContent>
+          </Popover>
           <span className="text-sm text-muted-foreground">
             {t("click-to-choose-icon")}
           </span>
         </div>
-        {showEmojiPicker && (
-          <EmojiPicker
-            selectedEmoji={formData.icon}
-            onSelect={onEmojiSelect}
-            onClose={onEmojiPickerClose}
-          />
-        )}
       </div>
 
       {/* Color Picker */}

@@ -25,7 +25,6 @@ export default function AddReminder() {
   const { t } = useTranslation();
   const { addReminder, setActiveTab } = useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData>(defaultFormData);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleFormDataChange = useCallback(
     (data: Partial<ReminderFormData>) => {
@@ -83,14 +82,6 @@ export default function AddReminder() {
     });
   }, []);
 
-  const handleEmojiSelect = useCallback(
-    (icon: string) => {
-      handleFormDataChange({ icon });
-      setShowEmojiPicker(false);
-    },
-    [handleFormDataChange]
-  );
-
   const isFormValid = useMemo(
     () => formData.message.trim().length > 0,
     [formData.message]
@@ -102,10 +93,6 @@ export default function AddReminder() {
         <ReminderFormFields
           formData={formData}
           onFormDataChange={handleFormDataChange}
-          showEmojiPicker={showEmojiPicker}
-          onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
-          onEmojiSelect={handleEmojiSelect}
-          onEmojiPickerClose={() => setShowEmojiPicker(false)}
           onAddTime={addTime}
           onRemoveTime={removeTime}
           onTimeChange={handleTimeChange}

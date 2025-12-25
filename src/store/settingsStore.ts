@@ -13,7 +13,7 @@ interface SettingsStore {
   toggleSound: () => void;
   setSoundVolume: (volume: number) => void;
   setShowSettings: (show: boolean) => void;
-  setLanguage: (language: string) => void;
+  setLanguage: (language: string) => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -53,8 +53,8 @@ export const useSettingsStore = create<SettingsStore>()(
 
         setShowSettings: (show) => set({ showSettings: show }),
 
-        setLanguage: (language) => {
-          i18n.changeLanguage(language);
+        setLanguage: async (language) => {
+          await i18n.changeLanguage(language);
           set((state) => ({
             settings: { ...state.settings, language },
           }));
@@ -66,9 +66,9 @@ export const useSettingsStore = create<SettingsStore>()(
       partialize: (state) => ({
         settings: state.settings,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => async (state) => {
         if (state?.settings.language) {
-          i18n.changeLanguage(state.settings.language);
+          await i18n.changeLanguage(state.settings.language);
         }
       },
     }
