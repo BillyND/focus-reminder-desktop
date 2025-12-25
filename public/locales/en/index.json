@@ -43,6 +43,7 @@
   "notification-sound-description": "Play sound when showing reminders",
   "notification-volume": "Notification Volume",
   "notification-volume-description": "Adjust sound volume",
+  "test-sound": "Test Sound",
   "data-management": "Data Management",
   "export-data": "Export Data",
   "import-data": "Import Data",

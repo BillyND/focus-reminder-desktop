@@ -41,6 +41,7 @@
   "notification-sound-description": "Ton abspielen beim Anzeigen von Erinnerungen",
   "notification-volume": "Benachrichtigungslautstärke",
   "notification-volume-description": "Lautstärke einstellen",
+  "test-sound": "Ton testen",
   "data-management": "Datenverwaltung",
   "export-data": "Daten exportieren",
   "import-data": "Daten importieren",

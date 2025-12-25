@@ -41,6 +41,7 @@
   "notification-sound-description": "Afspil lyd ved visning af påmindelser",
   "notification-volume": "Notifikationsvolumen",
   "notification-volume-description": "Juster lydstyrken",
+  "test-sound": "Test lyd",
   "data-management": "Datahåndtering",
   "export-data": "Eksporter data",
   "import-data": "Importer data",

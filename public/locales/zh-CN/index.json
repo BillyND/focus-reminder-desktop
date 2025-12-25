@@ -41,6 +41,7 @@
   "notification-sound-description": "显示提醒时播放声音",
   "notification-volume": "通知音量",
   "notification-volume-description": "调整音量",
+  "test-sound": "测试声音",
   "data-management": "数据管理",
   "export-data": "导出数据",
   "import-data": "导入数据",

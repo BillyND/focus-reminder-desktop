@@ -41,6 +41,7 @@
   "notification-sound-description": "Reproducir sonido al mostrar recordatorios",
   "notification-volume": "Volumen de notificación",
   "notification-volume-description": "Ajustar el volumen",
+  "test-sound": "Probar sonido",
   "data-management": "Gestión de datos",
   "export-data": "Exportar datos",
   "import-data": "Importar datos",

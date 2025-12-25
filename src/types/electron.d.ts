@@ -22,6 +22,7 @@ export interface ElectronAPI {
     displayMinutes: number;
   }) => Promise<boolean>;
   closeOverlay: () => void;
+  playNotificationSound: (volume: number) => void;
 }
 
 interface SettingsStoreAPI {

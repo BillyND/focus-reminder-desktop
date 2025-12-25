@@ -41,6 +41,7 @@
   "notification-sound-description": "Jouer un son lors de l'affichage des rappels",
   "notification-volume": "Volume de notification",
   "notification-volume-description": "Ajuster le volume sonore",
+  "test-sound": "Tester le son",
   "data-management": "Gestion des données",
   "export-data": "Exporter les données",
   "import-data": "Importer les données",

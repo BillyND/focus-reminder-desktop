@@ -41,6 +41,7 @@
   "notification-sound-description": "Spela ljud när påminnelser visas",
   "notification-volume": "Aviseringsvolym",
   "notification-volume-description": "Justera ljudvolymen",
+  "test-sound": "Testa ljud",
   "data-management": "Datahantering",
   "export-data": "Exportera data",
   "import-data": "Importera data",

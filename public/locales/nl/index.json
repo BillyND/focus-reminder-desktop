@@ -41,6 +41,7 @@
   "notification-sound-description": "Geluid afspelen bij weergave van herinneringen",
   "notification-volume": "Meldingsvolume",
   "notification-volume-description": "Geluidsvolume aanpassen",
+  "test-sound": "Geluid testen",
   "data-management": "Gegevensbeheer",
   "export-data": "Gegevens exporteren",
   "import-data": "Gegevens importeren",

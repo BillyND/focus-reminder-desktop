@@ -4,7 +4,6 @@ import {
   ipcMain,
   Notification,
   screen,
-  session,
   Tray,
   Menu,
   nativeImage,
@@ -25,12 +24,15 @@ let reminderIntervals: Map<string, NodeJS.Timeout> = new Map();
 let fixedTimeCheckers: Map<string, NodeJS.Timeout> = new Map();
 let lastFixedTimeTriggers: Map<string, string> = new Map(); // Track last trigger time to prevent duplicates
 
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-const isDev = !!VITE_DEV_SERVER_URL;
-
 function getIconPath() {
   return path.join(__dirname, "../public/icon.png");
 }
+
+function getSoundFilePath() {
+  return path.join(__dirname, "../public/alarm.mp3");
+}
+
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -85,13 +87,19 @@ function createOverlayWindow(
   icon: string,
   message: string,
   color: string,
-  displayMinutes: number
+  displayMinutes: number,
+  soundEnabled: boolean = true,
+  soundVolume: number = 30
 ) {
   if (overlayWindow) {
     overlayWindow.close();
   }
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  // Get sound file path (same approach as getIconPath)
+  const soundFilePath = getSoundFilePath();
+  const soundFileUrl = `file://${soundFilePath.replace(/\\/g, "/")}`;
 
   overlayWindow = new BrowserWindow({
     width: width,
@@ -205,19 +213,111 @@ function createOverlayWindow(
         <div class="close-hint">Click anywhere or ESC to close</div>
       </div>
       <script>
-        // Close handler will be injected after preload loads
-        window.addEventListener('load', () => {
-          function closeOverlay() {
-            if (window.electronAPI) {
-              window.electronAPI.closeOverlay();
+        let soundInterval = null;
+        let audioElement = null;
+        
+        // Sound playing function using HTMLAudioElement
+        function playNotificationSound(volume, soundUrl) {
+          try {
+            if (!audioElement) {
+              console.log('===> Creating new audio element with URL:', soundUrl);
+              audioElement = new Audio(soundUrl);
+              audioElement.preload = "auto";
+              
+              // Add error handler
+              audioElement.addEventListener('error', (e) => {
+                console.error('===> Audio element error:', e);
+                console.error('===> Audio error details:', audioElement.error);
+              });
+              
+              audioElement.addEventListener('canplay', () => {
+                console.log('===> Audio can play');
+              });
+              
+              audioElement.addEventListener('canplaythrough', () => {
+                console.log('===> Audio fully loaded');
+              });
             }
+            audioElement.volume = Math.max(0, Math.min(1, volume / 100));
+            audioElement.currentTime = 0;
+            const playPromise = audioElement.play();
+            if (playPromise !== undefined) {
+              playPromise.catch((error) => {
+                console.error('===> Error playing sound:', error);
+                if (error.name === 'NotAllowedError') {
+                  console.error('===> Audio play blocked - autoplay policy');
+                }
+              });
+            }
+          } catch (error) {
+            console.error('===> Error in playNotificationSound:', error);
           }
-          document.body.addEventListener('click', closeOverlay);
-          document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' || e.key === 'Enter') {
-              closeOverlay();
-            }
-          });
+        }
+        
+        // Start repeated sound playing
+        function startRepeatedSound(volume, soundUrl) {
+          // Play immediately
+          playNotificationSound(volume, soundUrl);
+          
+          // Play every 5 seconds
+          soundInterval = setInterval(() => {
+            playNotificationSound(volume, soundUrl);
+          }, 5000);
+        }
+        
+        // Stop repeated sound
+        function stopRepeatedSound() {
+          if (soundInterval) {
+            clearInterval(soundInterval);
+            soundInterval = null;
+          }
+          if (audioElement) {
+            audioElement.pause();
+            audioElement.currentTime = 0;
+          }
+        }
+        
+        // Close handler and sound playing
+        function initSound() {
+          // Play sound repeatedly if enabled
+          if (${soundEnabled}) {
+            console.log('===> Starting repeated sound, volume:', ${soundVolume}, 'url:', '${soundFileUrl}');
+            startRepeatedSound(${soundVolume}, '${soundFileUrl}');
+          }
+        }
+        
+        // Try to play sound immediately when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initSound);
+        } else {
+          initSound();
+        }
+        
+        // Also try on window load as backup
+        window.addEventListener('load', () => {
+          if (${soundEnabled} && !soundInterval) {
+            console.log('===> Window loaded, starting sound');
+            initSound();
+          }
+        });
+        
+        function closeOverlay() {
+          // Stop sound when closing
+          stopRepeatedSound();
+          if (window.electronAPI) {
+            window.electronAPI.closeOverlay();
+          }
+        }
+        document.body.addEventListener('click', closeOverlay);
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' || e.key === 'Enter') {
+            closeOverlay();
+          }
+        });
+        
+        // Stop sound when window is about to close
+        window.addEventListener('beforeunload', () => {
+          stopRepeatedSound();
         });
       </script>
     </body>
@@ -266,18 +366,85 @@ function createOverlayWindow(
   });
 }
 
-function showNotification(
+async function getSoundSettings(): Promise<{
+  soundEnabled: boolean;
+  soundVolume: number;
+}> {
+  // Try to get settings from main window's localStorage
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      const settings = await mainWindow.webContents.executeJavaScript(`
+        (() => {
+          try {
+            const stored = localStorage.getItem('focus-reminder-settings');
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              return {
+                soundEnabled: parsed.state?.settings?.soundEnabled ?? true,
+                soundVolume: parsed.state?.settings?.soundVolume ?? 30
+              };
+            }
+          } catch (e) {}
+          return { soundEnabled: true, soundVolume: 30 };
+        })()
+      `);
+      return settings;
+    } catch (error) {
+      console.log("===> Error getting sound settings:", error);
+      return { soundEnabled: true, soundVolume: 30 };
+    }
+  }
+  return { soundEnabled: true, soundVolume: 30 };
+}
+
+async function playSoundFromMainWindow(volume: number): Promise<void> {
+  // Play sound from main window using the sound utility
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      // Use dynamic import to get the sound utility and play sound
+      await mainWindow.webContents.executeJavaScript(`
+        (async () => {
+          try {
+            // Try to import and use the sound utility
+            const soundModule = await import('/src/utils/sound.ts');
+            if (soundModule && soundModule.playNotificationSound) {
+              await soundModule.playNotificationSound(${volume});
+            } else {
+              console.error('===> Sound utility function not found');
+            }
+          } catch (error) {
+            console.error('===> Error playing sound from main window:', error);
+          }
+        })()
+      `);
+    } catch (error) {
+      console.log("===> Error executing sound play in main window:", error);
+    }
+  }
+}
+
+async function showNotification(
   icon: string,
   message: string,
   color: string,
   displayMinutes: number
 ) {
+  // Get sound settings
+  const soundSettings = await getSoundSettings();
+
+  // Play sound immediately if enabled
+  if (soundSettings.soundEnabled) {
+    playSoundFromMainWindow(soundSettings.soundVolume).catch((error) => {
+      console.error("===> Error playing sound on notification:", error);
+    });
+  }
+
   // Try native notification first
   if (Notification.isSupported()) {
     const notification = new Notification({
       title: "Focus Reminder Desktop",
       body: `${icon} ${message}`,
-      silent: false,
+      silent: !soundSettings.soundEnabled,
       urgency: "critical",
     });
 
@@ -285,12 +452,26 @@ function showNotification(
 
     notification.on("click", () => {
       // Show overlay on click for stronger reminder
-      createOverlayWindow(icon, message, color, displayMinutes);
+      createOverlayWindow(
+        icon,
+        message,
+        color,
+        displayMinutes,
+        soundSettings.soundEnabled,
+        soundSettings.soundVolume
+      );
     });
   }
 
   // Also show overlay for stronger reminder
-  createOverlayWindow(icon, message, color, displayMinutes);
+  createOverlayWindow(
+    icon,
+    message,
+    color,
+    displayMinutes,
+    soundSettings.soundEnabled,
+    soundSettings.soundVolume
+  );
 }
 
 function scheduleReminder(reminder: {
@@ -317,7 +498,14 @@ function scheduleReminder(reminder: {
     const intervalMs = reminder.interval * 60 * 1000;
 
     const intervalId = setInterval(() => {
-      showNotification(icon, reminder.message, reminder.color, displayMinutes);
+      showNotification(
+        icon,
+        reminder.message,
+        reminder.color,
+        displayMinutes
+      ).catch((err) => {
+        console.error("===> Error showing notification:", err);
+      });
     }, intervalMs);
 
     reminderIntervals.set(reminder.id, intervalId);
@@ -347,7 +535,9 @@ function scheduleReminder(reminder: {
           reminder.message,
           reminder.color,
           displayMinutes
-        );
+        ).catch((err) => {
+          console.error("===> Error showing notification:", err);
+        });
       }
     }, 60000); // Check every minute
 
@@ -468,6 +658,12 @@ ipcMain.on("close-overlay", () => {
     overlayWindow.close();
     overlayWindow = null;
   }
+});
+
+ipcMain.on("play-notification-sound", (_, volume: number) => {
+  playSoundFromMainWindow(volume).catch((error) => {
+    console.error("===> Error playing sound via IPC:", error);
+  });
 });
 
 ipcMain.on("window-minimize", () => {
