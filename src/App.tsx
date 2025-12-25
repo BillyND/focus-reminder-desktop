@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Toaster } from "react-hot-toast";
+import { useShallow } from "zustand/react/shallow";
 import { useReminderStore } from "@/store/reminderStore";
 import { TAB } from "@/constants";
 import Header from "@/components/Header";
@@ -10,7 +11,13 @@ import EditModal from "@/components/EditModal";
 import Settings from "@/components/Settings";
 
 function App() {
-  const { activeTab, syncAllReminders, editingReminder } = useReminderStore();
+  const { activeTab, syncAllReminders, editingReminder } = useReminderStore(
+    useShallow((state) => ({
+      activeTab: state.activeTab,
+      syncAllReminders: state.syncAllReminders,
+      editingReminder: state.editingReminder,
+    }))
+  );
 
   useEffect(() => {
     // Sync all reminders when app starts - run async to not block render
@@ -36,7 +43,7 @@ function App() {
   }, [activeTab]);
 
   return (
-    <div className="h-full flex flex-col transition-colors">
+    <div className="h-full flex flex-col">
       <Header />
       <TabNavigation />
       <main className="flex-1 overflow-hidden">{content}</main>

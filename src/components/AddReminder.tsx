@@ -1,36 +1,29 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
-import { ReminderFormData } from "@/types/reminder";
-import { REMINDER_TYPE, DEFAULTS, TAB } from "@/constants";
-import { PRESET_COLORS } from "@/types/reminder";
+import { TAB } from "@/constants";
 import { validateReminderForm } from "@/utils/reminder";
+import { useReminderForm } from "@/hooks/useReminderForm";
+import { useTimeManagement } from "@/hooks/useTimeManagement";
 import { ReminderFormFields } from "./ReminderFormFields";
 import { ReminderPreview } from "./ReminderPreview";
 import { Button } from "@/components/ui/button";
 
-const defaultFormData: ReminderFormData = {
-  message: "",
-  icon: DEFAULTS.ICON,
-  color: PRESET_COLORS[DEFAULTS.COLOR_INDEX],
-  type: REMINDER_TYPE.INTERVAL,
-  interval: DEFAULTS.INTERVAL,
-  times: [DEFAULTS.TIME],
-  displayMinutes: DEFAULTS.DISPLAY_MINUTES,
-  enabled: true,
-};
-
 export default function AddReminder() {
   const { t } = useTranslation();
-  const { addReminder, setActiveTab } = useReminderStore();
-  const [formData, setFormData] = useState<ReminderFormData>(defaultFormData);
-
-  const handleFormDataChange = useCallback(
-    (data: Partial<ReminderFormData>) => {
-      setFormData((prev) => ({ ...prev, ...data }));
-    },
-    []
+  const { addReminder, setActiveTab } = useReminderStore(
+    useShallow((state) => ({
+      addReminder: state.addReminder,
+      setActiveTab: state.setActiveTab,
+    }))
+  );
+  const { formData, updateFormData, resetForm, isFormValid } =
+    useReminderForm();
+  const { addTime, removeTime, updateTime } = useTimeManagement(
+    formData,
+    updateFormData
   );
 
   const handleSubmit = useCallback(
@@ -43,48 +36,10 @@ export default function AddReminder() {
       }
 
       addReminder(formData);
-      setFormData(defaultFormData);
+      resetForm();
       setActiveTab(TAB.REMINDERS);
     },
-    [formData, addReminder, setActiveTab]
-  );
-
-  const handleReset = useCallback(() => {
-    setFormData(defaultFormData);
-  }, []);
-
-  const addTime = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      times: [...(prev.times || []), DEFAULTS.TIME],
-    }));
-  }, []);
-
-  const removeTime = useCallback((index: number) => {
-    setFormData((prev) => {
-      const newTimes = [...(prev.times || [])];
-      newTimes.splice(index, 1);
-      return {
-        ...prev,
-        times: newTimes,
-      };
-    });
-  }, []);
-
-  const handleTimeChange = useCallback((index: number, time: string) => {
-    setFormData((prev) => {
-      const newTimes = [...(prev.times || [])];
-      newTimes[index] = time;
-      return {
-        ...prev,
-        times: newTimes,
-      };
-    });
-  }, []);
-
-  const isFormValid = useMemo(
-    () => formData.message.trim().length > 0,
-    [formData.message]
+    [formData, addReminder, resetForm, setActiveTab]
   );
 
   return (
@@ -92,10 +47,10 @@ export default function AddReminder() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <ReminderFormFields
           formData={formData}
-          onFormDataChange={handleFormDataChange}
+          onFormDataChange={updateFormData}
           onAddTime={addTime}
           onRemoveTime={removeTime}
-          onTimeChange={handleTimeChange}
+          onTimeChange={updateTime}
         />
 
         <ReminderPreview formData={formData} />
@@ -104,7 +59,7 @@ export default function AddReminder() {
         <div className="flex gap-3 pt-2">
           <Button
             type="button"
-            onClick={handleReset}
+            onClick={resetForm}
             variant="secondary"
             className="flex-1"
           >

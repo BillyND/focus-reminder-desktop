@@ -17,7 +17,7 @@ export default memo(function Header() {
   }, []);
 
   return (
-    <header className="draggable flex items-center justify-between px-3 py-2 border-b transition-colors">
+    <header className="draggable flex items-center justify-between px-3 py-2 border-b">
       <div className="flex items-center gap-3">
         {/* <span className="text-2xl">💧</span>
         <div>
@@ -33,7 +33,6 @@ export default memo(function Header() {
             onClick={handleMinimize}
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
             aria-label="Minimize"
           >
             <Minus className="h-4 w-4" />
@@ -42,7 +41,6 @@ export default memo(function Header() {
             onClick={handleMaximize}
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
             aria-label="Maximize"
           >
             <Maximize2 className="h-4 w-4" />
@@ -51,7 +49,6 @@ export default memo(function Header() {
             onClick={handleClose}
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
             aria-label="Close"
           >
             <X className="h-4 w-4" />

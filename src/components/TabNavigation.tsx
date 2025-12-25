@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import { useReminderStore } from "@/store/reminderStore";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabType } from "@/types/common";
@@ -14,7 +15,12 @@ interface Tab {
 
 export default memo(function TabNavigation() {
   const { t } = useTranslation();
-  const { activeTab, setActiveTab } = useReminderStore();
+  const { activeTab, setActiveTab } = useReminderStore(
+    useShallow((state) => ({
+      activeTab: state.activeTab,
+      setActiveTab: state.setActiveTab,
+    }))
+  );
 
   const tabs: Tab[] = useMemo(
     () => [

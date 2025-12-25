@@ -1,22 +1,29 @@
-import { useState, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useReminderStore } from "@/store/reminderStore";
-import { FILE_NAMES, DEFAULTS } from "@/constants";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { Download, Upload, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FILE_NAMES } from "@/constants";
+import { SettingsSoundSection } from "./SettingsSoundSection";
+import { SettingsDataSection } from "./SettingsDataSection";
 
-export default function Settings() {
+export default memo(function Settings() {
   const { t } = useTranslation();
-  const { settings, toggleSound, setSoundVolume } = useSettingsStore();
-  const { exportData, importData, resetAll } = useReminderStore();
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const { settings, toggleSound, setSoundVolume } = useSettingsStore(
+    useShallow((state) => ({
+      settings: state.settings,
+      toggleSound: state.toggleSound,
+      setSoundVolume: state.setSoundVolume,
+    }))
+  );
+  const { exportData, importData, resetAll } = useReminderStore(
+    useShallow((state) => ({
+      exportData: state.exportData,
+      importData: state.importData,
+      resetAll: state.resetAll,
+    }))
+  );
 
   const handleExport = useCallback(() => {
     const data = exportData();
@@ -53,110 +60,28 @@ export default function Settings() {
       }
     };
     input.click();
-  }, [importData]);
+  }, [importData, t]);
 
-  const handleResetConfirm = useCallback(() => {
+  const handleReset = useCallback(() => {
     resetAll();
-    setIsResetDialogOpen(false);
     toast.success(t("data-reset-success"));
   }, [resetAll, t]);
 
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Notification Sound */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <Label className="text-base font-semibold cursor-pointer">
-                {t("notification-sound")}
-              </Label>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("notification-sound-description")}
-              </p>
-            </div>
-            <Switch
-              checked={settings.soundEnabled}
-              onCheckedChange={toggleSound}
-              aria-label="Toggle sound"
-            />
-          </div>
-        </Card>
-
-        {/* Sound Volume */}
-        {settings.soundEnabled && (
-          <Card className="p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label className="text-base font-semibold">
-                    {t("notification-volume")}
-                  </Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t("notification-volume-description")}
-                  </p>
-                </div>
-                <span className="text-primary font-medium ml-4">
-                  {settings.soundVolume || DEFAULTS.SOUND_VOLUME}%
-                </span>
-              </div>
-              <Slider
-                value={[settings.soundVolume || DEFAULTS.SOUND_VOLUME]}
-                onValueChange={(value) => setSoundVolume(value[0])}
-                max={100}
-                step={1}
-                className="w-full"
-              />
-            </div>
-          </Card>
-        )}
-
-        {/* Data Management */}
-        <Card className="p-4">
-          <h3 className="text-base font-semibold mb-4">
-            {t("data-management")}
-          </h3>
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="flex-1"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {t("export-data")}
-              </Button>
-              <Button
-                onClick={handleImport}
-                variant="outline"
-                className="flex-1"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                {t("import-data")}
-              </Button>
-            </div>
-            <div>
-              <Button
-                variant="destructive"
-                className="w-full"
-                onClick={() => setIsResetDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t("reset-all")}
-              </Button>
-              <ConfirmDialog
-                open={isResetDialogOpen}
-                onOpenChange={setIsResetDialogOpen}
-                onConfirm={handleResetConfirm}
-                title={t("confirm-reset")}
-                description={t("reset-confirm-description")}
-                confirmText={t("reset-all")}
-                variant="destructive"
-              />
-            </div>
-          </div>
-        </Card>
+        <SettingsSoundSection
+          soundEnabled={settings.soundEnabled}
+          soundVolume={settings.soundVolume || 30}
+          onToggleSound={toggleSound}
+          onVolumeChange={setSoundVolume}
+        />
+        <SettingsDataSection
+          onExport={handleExport}
+          onImport={handleImport}
+          onReset={handleReset}
+        />
       </div>
     </div>
   );
-}
+});

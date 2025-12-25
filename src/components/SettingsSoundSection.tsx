@@ -1,0 +1,75 @@
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { DEFAULTS } from "@/constants";
+
+interface SettingsSoundSectionProps {
+  soundEnabled: boolean;
+  soundVolume: number;
+  onToggleSound: () => void;
+  onVolumeChange: (volume: number) => void;
+}
+
+export const SettingsSoundSection = memo(function SettingsSoundSection({
+  soundEnabled,
+  soundVolume,
+  onToggleSound,
+  onVolumeChange,
+}: SettingsSoundSectionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {/* Notification Sound */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <Label className="text-base font-semibold cursor-pointer">
+              {t("notification-sound")}
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("notification-sound-description")}
+            </p>
+          </div>
+          <Switch
+            checked={soundEnabled}
+            onCheckedChange={onToggleSound}
+            aria-label="Toggle sound"
+          />
+        </div>
+      </Card>
+
+      {/* Sound Volume */}
+      {soundEnabled && (
+        <Card className="p-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label className="text-base font-semibold">
+                  {t("notification-volume")}
+                </Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t("notification-volume-description")}
+                </p>
+              </div>
+              <span className="text-primary font-medium ml-4">
+                {soundVolume || DEFAULTS.SOUND_VOLUME}%
+              </span>
+            </div>
+            <Slider
+              value={[soundVolume || DEFAULTS.SOUND_VOLUME]}
+              onValueChange={(value) => onVolumeChange(value[0])}
+              max={100}
+              step={1}
+              className="w-full"
+            />
+          </div>
+        </Card>
+      )}
+    </>
+  );
+});
+

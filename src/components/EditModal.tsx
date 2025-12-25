@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
 import { ReminderFormData } from "@/types/reminder";
-import { DEFAULTS } from "@/constants";
 import { validateReminderForm } from "@/utils/reminder";
+import { useReminderForm } from "@/hooks/useReminderForm";
+import { useTimeManagement } from "@/hooks/useTimeManagement";
 import { ReminderFormFields } from "./ReminderFormFields";
 import {
   Dialog,
@@ -18,22 +20,26 @@ import { Button } from "@/components/ui/button";
 export default function EditModal() {
   const { t } = useTranslation();
   const { editingReminder, setEditingReminder, updateReminder } =
-    useReminderStore();
-  const [formData, setFormData] = useState<ReminderFormData | null>(null);
+    useReminderStore(
+      useShallow((state) => ({
+        editingReminder: state.editingReminder,
+        setEditingReminder: state.setEditingReminder,
+        updateReminder: state.updateReminder,
+      }))
+    );
+  const { formData, updateFormData, isFormValid, setFormData } =
+    useReminderForm();
+  const { addTime, removeTime, updateTime } = useTimeManagement(
+    formData,
+    updateFormData
+  );
 
   useEffect(() => {
     if (editingReminder) {
       const { id, ...formDataWithoutId } = editingReminder;
       setFormData(formDataWithoutId);
     }
-  }, [editingReminder]);
-
-  const handleFormDataChange = useCallback(
-    (data: Partial<ReminderFormData>) => {
-      setFormData((prev) => (prev ? { ...prev, ...data } : null));
-    },
-    []
-  );
+  }, [editingReminder, setFormData]);
 
   const handleSubmit = useCallback(
     (e?: React.FormEvent) => {
@@ -56,47 +62,6 @@ export default function EditModal() {
     setEditingReminder(null);
   }, [setEditingReminder]);
 
-  const addTime = useCallback(() => {
-    if (!formData) return;
-    setFormData({
-      ...formData,
-      times: [...(formData.times || []), DEFAULTS.TIME],
-    });
-  }, [formData]);
-
-  const removeTime = useCallback(
-    (index: number) => {
-      if (formData?.times) {
-        const newTimes = [...formData.times];
-        newTimes.splice(index, 1);
-        setFormData({
-          ...formData,
-          times: newTimes,
-        });
-      }
-    },
-    [formData]
-  );
-
-  const handleTimeChange = useCallback(
-    (index: number, time: string) => {
-      if (formData?.times) {
-        const newTimes = [...formData.times];
-        newTimes[index] = time;
-        setFormData({
-          ...formData,
-          times: newTimes,
-        });
-      }
-    },
-    [formData]
-  );
-
-  const isFormValid = useMemo(
-    () => (formData?.message.trim().length ?? 0) > 0,
-    [formData?.message]
-  );
-
   if (!formData || !editingReminder) return null;
 
   return (
@@ -115,10 +80,10 @@ export default function EditModal() {
         >
           <ReminderFormFields
             formData={formData}
-            onFormDataChange={handleFormDataChange}
+            onFormDataChange={updateFormData}
             onAddTime={addTime}
             onRemoveTime={removeTime}
-            onTimeChange={handleTimeChange}
+            onTimeChange={updateTime}
           />
         </form>
 

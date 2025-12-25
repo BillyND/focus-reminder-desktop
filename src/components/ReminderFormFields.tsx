@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ReminderFormData } from "@/types/reminder";
 import { REMINDER_TYPE, DEFAULTS } from "@/constants";
@@ -35,10 +35,13 @@ export const ReminderFormFields = memo(function ReminderFormFields({
   const { t } = useTranslation();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
-  const handleEmojiSelect = (icon: string) => {
-    onFormDataChange({ icon });
-    setIsEmojiPickerOpen(false);
-  };
+  const handleEmojiSelect = useCallback(
+    (icon: string) => {
+      onFormDataChange({ icon });
+      setIsEmojiPickerOpen(false);
+    },
+    [onFormDataChange]
+  );
 
   return (
     <>
@@ -60,7 +63,7 @@ export const ReminderFormFields = memo(function ReminderFormFields({
         <div className="flex items-center gap-3">
           <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
             <PopoverTrigger asChild>
-              <Button type="button" variant="outline" size="lg">
+              <Button type="button" variant="outline" size="default">
                 <span className="text-3xl">{formData.icon}</span>
               </Button>
             </PopoverTrigger>

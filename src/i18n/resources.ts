@@ -21,4 +21,3 @@ export const resources = {
   da: { translation: da },
   nl: { translation: nl },
 } as const;
-

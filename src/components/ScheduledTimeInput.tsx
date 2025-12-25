@@ -41,7 +41,7 @@ export const ScheduledTimeInput = memo(function ScheduledTimeInput({
             variant="ghost"
             size="icon"
             onClick={() => onRemoveTime(index)}
-            className="h-9 w-9 flex-shrink-0"
+            className="flex-shrink-0"
           >
             <X className="h-4 w-4" />
           </Button>

@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import { useSettingsStore } from "@/store/settingsStore";
 import {
   Popover,
@@ -30,7 +31,12 @@ const getFlagUrl = (countryCode: string) => {
 
 export default memo(function LanguageSelector() {
   const { t, i18n } = useTranslation();
-  const { settings, setLanguage } = useSettingsStore();
+  const { settings, setLanguage } = useSettingsStore(
+    useShallow((state) => ({
+      settings: state.settings,
+      setLanguage: state.setLanguage,
+    }))
+  );
   const currentLanguage = settings.language || i18n.language || "en";
   const [isOpen, setIsOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -50,12 +56,7 @@ export default memo(function LanguageSelector() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          aria-label={t("language")}
-        >
+        <Button variant="ghost" size="icon" aria-label={t("language")}>
           <Globe className="h-4 w-4" />
         </Button>
       </PopoverTrigger>

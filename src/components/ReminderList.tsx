@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import { useReminderStore } from "@/store/reminderStore";
 import { ReminderCard } from "./ReminderCard";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,12 @@ import { Plus, Inbox } from "lucide-react";
 
 export default memo(function ReminderList() {
   const { t } = useTranslation();
-  const { reminders, setActiveTab } = useReminderStore();
+  const { reminders, setActiveTab } = useReminderStore(
+    useShallow((state) => ({
+      reminders: state.reminders,
+      setActiveTab: state.setActiveTab,
+    }))
+  );
 
   const handleAddClick = useCallback(() => {
     setActiveTab(TAB.ADD);
@@ -34,14 +40,8 @@ export default memo(function ReminderList() {
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-3">
-      {reminders.map((reminder, index) => (
-        <div
-          key={reminder.id}
-          className="animate-in"
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          <ReminderCard reminder={reminder} />
-        </div>
+      {reminders.map((reminder) => (
+        <ReminderCard key={reminder.id} reminder={reminder} />
       ))}
     </div>
   );
