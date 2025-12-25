@@ -77,7 +77,10 @@ export const ReminderCard = memo(function ReminderCard({
         {repeatText}
       </span>
       <span className="text-xs text-muted-foreground">
-        • {reminder.displayMinutes}m
+        •{" "}
+        {reminder.displayMinutes === 1
+          ? t("duration-minute", { minute: reminder.displayMinutes })
+          : t("duration-minutes", { minute: reminder.displayMinutes })}
       </span>
     </>
   );

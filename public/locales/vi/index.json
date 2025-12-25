@@ -63,6 +63,7 @@
   "dutch": "Tiếng Hà Lan",
   "vietnamese": "Tiếng Việt",
   "language": "Ngôn ngữ",
+  "duration-minute": "{{minute}} phút",
   "duration-minutes": "{{minute}} phút"
 }
 

@@ -44,7 +44,7 @@ export const SettingsSoundSection = memo(function SettingsSoundSection({
               {t("notification-sound")}
             </Label>
             <p className="text-sm text-muted-foreground mt-1">
-              {t("notification-sound-description")}222
+              {t("notification-sound-description")}
             </p>
           </div>
           <Switch
