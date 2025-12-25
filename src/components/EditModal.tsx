@@ -75,7 +75,7 @@ export default function EditModal() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 overflow-y-auto max-h-[calc(90vh-180px)] pr-2"
+          className="space-y-4 overflow-y-auto max-h-[calc(90vh-180px)] px-4 pb-4"
         >
           <ReminderFormFields
             formData={formData}
