@@ -21,17 +21,11 @@ export default function EditModal() {
     useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [newTime, setNewTime] = useState<string>(DEFAULTS.TIME);
 
   useEffect(() => {
     if (editingReminder) {
       const { id, ...formDataWithoutId } = editingReminder;
       setFormData(formDataWithoutId);
-      if (editingReminder.times && editingReminder.times.length > 0) {
-        setNewTime(editingReminder.times[editingReminder.times.length - 1]);
-      } else {
-        setNewTime(DEFAULTS.TIME);
-      }
     }
   }, [editingReminder]);
 
@@ -65,27 +59,34 @@ export default function EditModal() {
 
   const addTime = useCallback(() => {
     if (!formData) return;
-    if (newTime && formData.times && !formData.times.includes(newTime)) {
-      setFormData({
-        ...formData,
-        times: [...formData.times, newTime].sort(),
-      });
-      setNewTime(DEFAULTS.TIME);
-    } else if (newTime && !formData.times) {
-      setFormData({
-        ...formData,
-        times: [newTime],
-      });
-      setNewTime(DEFAULTS.TIME);
-    }
-  }, [newTime, formData]);
+    setFormData({
+      ...formData,
+      times: [...(formData.times || []), DEFAULTS.TIME],
+    });
+  }, [formData]);
 
   const removeTime = useCallback(
-    (time: string) => {
+    (index: number) => {
       if (formData?.times) {
+        const newTimes = [...formData.times];
+        newTimes.splice(index, 1);
         setFormData({
           ...formData,
-          times: formData.times.filter((t) => t !== time),
+          times: newTimes,
+        });
+      }
+    },
+    [formData]
+  );
+
+  const handleTimeChange = useCallback(
+    (index: number, time: string) => {
+      if (formData?.times) {
+        const newTimes = [...formData.times];
+        newTimes[index] = time;
+        setFormData({
+          ...formData,
+          times: newTimes,
         });
       }
     },
@@ -128,10 +129,9 @@ export default function EditModal() {
             onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
             onEmojiSelect={handleEmojiSelect}
             onEmojiPickerClose={() => setShowEmojiPicker(false)}
-            newTime={newTime}
-            onNewTimeChange={setNewTime}
             onAddTime={addTime}
             onRemoveTime={removeTime}
+            onTimeChange={handleTimeChange}
           />
         </form>
 

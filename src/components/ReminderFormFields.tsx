@@ -19,10 +19,9 @@ interface ReminderFormFieldsProps {
   onToggleEmojiPicker: () => void;
   onEmojiSelect: (icon: string) => void;
   onEmojiPickerClose: () => void;
-  newTime: string;
-  onNewTimeChange: (time: string) => void;
   onAddTime: () => void;
-  onRemoveTime: (time: string) => void;
+  onRemoveTime: (index: number) => void;
+  onTimeChange: (index: number, time: string) => void;
 }
 
 export const ReminderFormFields = memo(function ReminderFormFields({
@@ -32,10 +31,9 @@ export const ReminderFormFields = memo(function ReminderFormFields({
   onToggleEmojiPicker,
   onEmojiSelect,
   onEmojiPickerClose,
-  newTime,
-  onNewTimeChange,
   onAddTime,
   onRemoveTime,
+  onTimeChange,
 }: ReminderFormFieldsProps) {
   const { t } = useTranslation();
 
@@ -102,10 +100,9 @@ export const ReminderFormFields = memo(function ReminderFormFields({
       ) : (
         <ScheduledTimeInput
           times={formData.times || []}
-          newTime={newTime}
-          onNewTimeChange={onNewTimeChange}
           onAddTime={onAddTime}
           onRemoveTime={onRemoveTime}
+          onTimeChange={onTimeChange}
         />
       )}
 

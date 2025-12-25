@@ -26,7 +26,6 @@ export default function AddReminder() {
   const { addReminder, setActiveTab } = useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData>(defaultFormData);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [newTime, setNewTime] = useState<string>(DEFAULTS.TIME);
 
   const handleFormDataChange = useCallback(
     (data: Partial<ReminderFormData>) => {
@@ -56,20 +55,32 @@ export default function AddReminder() {
   }, []);
 
   const addTime = useCallback(() => {
-    if (newTime && formData.times && !formData.times.includes(newTime)) {
-      setFormData((prev) => ({
-        ...prev,
-        times: [...(prev.times || []), newTime].sort(),
-      }));
-      setNewTime(DEFAULTS.TIME);
-    }
-  }, [newTime, formData.times]);
-
-  const removeTime = useCallback((time: string) => {
     setFormData((prev) => ({
       ...prev,
-      times: prev.times?.filter((t) => t !== time) || [],
+      times: [...(prev.times || []), DEFAULTS.TIME],
     }));
+  }, []);
+
+  const removeTime = useCallback((index: number) => {
+    setFormData((prev) => {
+      const newTimes = [...(prev.times || [])];
+      newTimes.splice(index, 1);
+      return {
+        ...prev,
+        times: newTimes,
+      };
+    });
+  }, []);
+
+  const handleTimeChange = useCallback((index: number, time: string) => {
+    setFormData((prev) => {
+      const newTimes = [...(prev.times || [])];
+      newTimes[index] = time;
+      return {
+        ...prev,
+        times: newTimes,
+      };
+    });
   }, []);
 
   const handleEmojiSelect = useCallback(
@@ -95,10 +106,9 @@ export default function AddReminder() {
           onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
           onEmojiSelect={handleEmojiSelect}
           onEmojiPickerClose={() => setShowEmojiPicker(false)}
-          newTime={newTime}
-          onNewTimeChange={setNewTime}
           onAddTime={addTime}
           onRemoveTime={removeTime}
+          onTimeChange={handleTimeChange}
         />
 
         <ReminderPreview formData={formData} />

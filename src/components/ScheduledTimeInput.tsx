@@ -3,55 +3,55 @@ import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 
 interface ScheduledTimeInputProps {
   times: string[];
-  newTime: string;
-  onNewTimeChange: (time: string) => void;
   onAddTime: () => void;
-  onRemoveTime: (time: string) => void;
+  onRemoveTime: (index: number) => void;
+  onTimeChange: (index: number, time: string) => void;
 }
 
 export const ScheduledTimeInput = memo(function ScheduledTimeInput({
   times,
-  newTime,
-  onNewTimeChange,
   onAddTime,
   onRemoveTime,
+  onTimeChange,
 }: ScheduledTimeInputProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-2">
-      <Label>{t("reminder-time")}</Label>
-      <div className="flex gap-2">
-        <Input
-          type="time"
-          value={newTime}
-          onChange={(e) => onNewTimeChange(e.target.value)}
-        />
-        <Button type="button" onClick={onAddTime}>
-          {t("add")}
-        </Button>
-      </div>
-      {times.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
-          {times.map((time) => (
-            <Badge key={time} variant="secondary" className="gap-1">
-              {time}
-              <button
-                type="button"
-                onClick={() => onRemoveTime(time)}
-                className="hover:text-foreground"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
+    <div className="w-full max-w-xs space-y-2">
+      <Label htmlFor="time-picker" className="px-1">
+        {t("reminder-time")}
+      </Label>
+
+      {/* Time inputs */}
+      {times.map((time, index) => (
+        <div key={index} className="flex gap-2 items-center">
+          <Input
+            type="time"
+            step="1"
+            value={time}
+            onChange={(e) => onTimeChange(index, e.target.value)}
+            className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => onRemoveTime(index)}
+            className="h-9 w-9 flex-shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-      )}
+      ))}
+
+      {/* Add button */}
+      <Button type="button" onClick={onAddTime} className="w-fit">
+        {t("add")}
+      </Button>
     </div>
   );
 });

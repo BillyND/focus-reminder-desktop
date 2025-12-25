@@ -35,7 +35,6 @@ export default memo(function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  console.log("===> imageErrors", imageErrors);
   const handleLanguageChange = useCallback(
     (languageCode: string) => {
       setLanguage(languageCode);
