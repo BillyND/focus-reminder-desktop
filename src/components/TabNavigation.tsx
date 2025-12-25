@@ -1,4 +1,5 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useReminderStore } from "@/store/reminderStore";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabType } from "@/types/common";
@@ -7,18 +8,22 @@ import { Bell, Plus, Settings } from "lucide-react";
 
 interface Tab {
   id: TabType;
-  label: string;
+  labelKey: string;
   icon: typeof Bell;
 }
 
-const tabs: Tab[] = [
-  { id: TAB.REMINDERS, label: "Reminders", icon: Bell },
-  { id: TAB.ADD, label: "Add New", icon: Plus },
-  { id: TAB.SETTINGS, label: "Settings", icon: Settings },
-];
-
 export default memo(function TabNavigation() {
+  const { t } = useTranslation();
   const { activeTab, setActiveTab } = useReminderStore();
+
+  const tabs: Tab[] = useMemo(
+    () => [
+      { id: TAB.REMINDERS, labelKey: "reminders", icon: Bell },
+      { id: TAB.ADD, labelKey: "add-new", icon: Plus },
+      { id: TAB.SETTINGS, labelKey: "settings", icon: Settings },
+    ],
+    []
+  );
 
   const handleValueChange = useCallback(
     (value: string) => {
@@ -43,7 +48,7 @@ export default memo(function TabNavigation() {
               className="flex items-center gap-2"
             >
               <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
+              <span>{t(tab.labelKey)}</span>
             </TabsTrigger>
           );
         })}

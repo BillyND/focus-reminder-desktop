@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { Toaster } from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
 import { TAB } from "@/constants";
 import Header from "@/components/Header";
@@ -35,6 +36,7 @@ function App() {
       <TabNavigation />
       <main className="flex-1 overflow-hidden">{content}</main>
       {editingReminder && <EditModal />}
+      <Toaster position="top-center" />
     </div>
   );
 }

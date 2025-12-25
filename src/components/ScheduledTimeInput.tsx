@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { MESSAGES } from "@/constants";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,11 @@ export const ScheduledTimeInput = memo(function ScheduledTimeInput({
   onAddTime,
   onRemoveTime,
 }: ScheduledTimeInputProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-2">
-      <Label>{MESSAGES.REMINDER_TIME}</Label>
+      <Label>{t("reminder-time")}</Label>
       <div className="flex gap-2">
         <Input
           type="time"
@@ -31,7 +33,7 @@ export const ScheduledTimeInput = memo(function ScheduledTimeInput({
           onChange={(e) => onNewTimeChange(e.target.value)}
         />
         <Button type="button" onClick={onAddTime}>
-          {MESSAGES.ADD}
+          {t("add")}
         </Button>
       </div>
       {times.length > 0 && (

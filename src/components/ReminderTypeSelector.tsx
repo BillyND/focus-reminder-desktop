@@ -1,6 +1,7 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { ReminderType } from "@/types/common";
-import { REMINDER_TYPE, MESSAGES } from "@/constants";
+import { REMINDER_TYPE } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Timer, Clock } from "lucide-react";
@@ -16,9 +17,11 @@ export const ReminderTypeSelector = memo(function ReminderTypeSelector({
   onTypeChange,
   size = "default",
 }: ReminderTypeSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-2">
-      <Label>{MESSAGES.REMINDER_TYPE}</Label>
+      <Label>{t("reminder-type")}</Label>
       <div className="flex gap-3">
         <Button
           type="button"
@@ -28,7 +31,7 @@ export const ReminderTypeSelector = memo(function ReminderTypeSelector({
           size={size}
         >
           <Timer className="mr-2 h-4 w-4" />
-          {MESSAGES.REPEAT_BY_MINUTES}
+          {t("repeat-by-minutes")}
         </Button>
         <Button
           type="button"
@@ -38,7 +41,7 @@ export const ReminderTypeSelector = memo(function ReminderTypeSelector({
           size={size}
         >
           <Clock className="mr-2 h-4 w-4" />
-          {MESSAGES.FIXED_TIME}
+          {t("fixed-time")}
         </Button>
       </div>
     </div>

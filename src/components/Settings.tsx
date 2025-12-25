@@ -1,19 +1,32 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useReminderStore } from "@/store/reminderStore";
-import { FILE_NAMES, MESSAGES, DEFAULTS } from "@/constants";
+import { FILE_NAMES, DEFAULTS } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Download, Upload, Trash2 } from "lucide-react";
 
 export default function Settings() {
-  const { settings, toggleDarkMode, toggleSound, setSoundVolume } =
-    useSettingsStore();
+  const { t } = useTranslation();
+  const { settings, toggleSound, setSoundVolume } = useSettingsStore();
   const { exportData, importData, resetAll } = useReminderStore();
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
   const handleExport = useCallback(() => {
     const data = exportData();
@@ -41,9 +54,9 @@ export default function Settings() {
         reader.onload = (event) => {
           const data = event.target?.result as string;
           if (importData(data)) {
-            alert(MESSAGES.DATA_IMPORTED_SUCCESS);
+            toast.success(t("data-imported-success"));
           } else {
-            alert(MESSAGES.DATA_IMPORTED_ERROR);
+            toast.error(t("data-imported-error"));
           }
         };
         reader.readAsText(file);
@@ -52,47 +65,24 @@ export default function Settings() {
     input.click();
   }, [importData]);
 
-  const handleReset = useCallback(() => {
-    if (showResetConfirm) {
-      resetAll();
-      setShowResetConfirm(false);
-      alert(MESSAGES.DATA_RESET_SUCCESS);
-    } else {
-      setShowResetConfirm(true);
-    }
-  }, [showResetConfirm, resetAll]);
+  const handleResetConfirm = useCallback(() => {
+    resetAll();
+    setIsResetDialogOpen(false);
+    toast.success(t("data-reset-success"));
+  }, [resetAll, t]);
 
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Dark Mode */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <Label className="text-base font-semibold cursor-pointer">
-                {MESSAGES.DARK_MODE}
-              </Label>
-              <p className="text-sm text-muted-foreground mt-1">
-                {MESSAGES.DARK_MODE_DESCRIPTION}
-              </p>
-            </div>
-            <Switch
-              checked={settings.darkMode}
-              onCheckedChange={toggleDarkMode}
-              aria-label="Toggle dark mode"
-            />
-          </div>
-        </Card>
-
         {/* Notification Sound */}
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <Label className="text-base font-semibold cursor-pointer">
-                {MESSAGES.NOTIFICATION_SOUND}
+                {t("notification-sound")}
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                {MESSAGES.NOTIFICATION_SOUND_DESCRIPTION}
+                {t("notification-sound-description")}
               </p>
             </div>
             <Switch
@@ -110,10 +100,10 @@ export default function Settings() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label className="text-base font-semibold">
-                    {MESSAGES.NOTIFICATION_VOLUME}
+                    {t("notification-volume")}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {MESSAGES.NOTIFICATION_VOLUME_DESCRIPTION}
+                    {t("notification-volume-description")}
                   </p>
                 </div>
                 <span className="text-primary font-medium ml-4">
@@ -134,7 +124,7 @@ export default function Settings() {
         {/* Data Management */}
         <Card className="p-4">
           <h3 className="text-base font-semibold mb-4">
-            {MESSAGES.DATA_MANAGEMENT}
+            {t("data-management")}
           </h3>
           <div className="space-y-3">
             <div className="flex gap-3">
@@ -143,26 +133,46 @@ export default function Settings() {
                 variant="outline"
                 className="flex-1"
               >
-                <Download className="mr-2 h-4 w-4" />
-                {MESSAGES.EXPORT_DATA}
+                <Upload className="mr-2 h-4 w-4" />
+                {t("export-data")}
               </Button>
               <Button
                 onClick={handleImport}
                 variant="outline"
                 className="flex-1"
               >
-                <Upload className="mr-2 h-4 w-4" />
-                {MESSAGES.IMPORT_DATA}
+                <Download className="mr-2 h-4 w-4" />
+                {t("import-data")}
               </Button>
             </div>
-            <Button
-              onClick={handleReset}
-              variant="destructive"
-              className="w-full"
+            <AlertDialog
+              open={isResetDialogOpen}
+              onOpenChange={setIsResetDialogOpen}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {showResetConfirm ? MESSAGES.CONFIRM_RESET : MESSAGES.RESET_ALL}
-            </Button>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t("reset-all")}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("confirm-reset")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("reset-confirm-description")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleResetConfirm}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {t("reset-all")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </Card>
       </div>

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { AppSettings } from "../types/reminder";
 import { STORAGE_KEYS, DEFAULTS } from "../constants";
+import i18n from "../i18n/config";
 
 interface SettingsStore {
   settings: AppSettings;
@@ -9,10 +10,10 @@ interface SettingsStore {
 
   // Actions
   updateSettings: (settings: Partial<AppSettings>) => void;
-  toggleDarkMode: () => void;
   toggleSound: () => void;
   setSoundVolume: (volume: number) => void;
   setShowSettings: (show: boolean) => void;
+  setLanguage: (language: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -25,21 +26,16 @@ export const useSettingsStore = create<SettingsStore>()(
 
       return {
         settings: {
-          darkMode: false, // Default to light mode
           enabled: true,
           soundEnabled: true,
           soundVolume: DEFAULTS.SOUND_VOLUME,
+          language: "en",
         },
         showSettings: false,
 
         updateSettings: (newSettings) =>
           set((state) => ({
             settings: { ...state.settings, ...newSettings },
-          })),
-
-        toggleDarkMode: () =>
-          set((state) => ({
-            settings: { ...state.settings, darkMode: !state.settings.darkMode },
           })),
 
         toggleSound: () =>
@@ -56,6 +52,13 @@ export const useSettingsStore = create<SettingsStore>()(
           })),
 
         setShowSettings: (show) => set({ showSettings: show }),
+
+        setLanguage: (language) => {
+          i18n.changeLanguage(language);
+          set((state) => ({
+            settings: { ...state.settings, language },
+          }));
+        },
       };
     },
     {
@@ -63,6 +66,11 @@ export const useSettingsStore = create<SettingsStore>()(
       partialize: (state) => ({
         settings: state.settings,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.settings.language) {
+          i18n.changeLanguage(state.settings.language);
+        }
+      },
     }
   )
 );

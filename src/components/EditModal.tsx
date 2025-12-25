@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
 import { ReminderFormData } from "@/types/reminder";
-import { DEFAULTS, MESSAGES } from "@/constants";
+import { DEFAULTS } from "@/constants";
 import { validateReminderForm } from "@/utils/reminder";
 import { ReminderFormFields } from "./ReminderFormFields";
 import {
@@ -14,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function EditModal() {
+  const { t } = useTranslation();
   const { editingReminder, setEditingReminder, updateReminder } =
     useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData | null>(null);
@@ -46,7 +49,7 @@ export default function EditModal() {
 
       const validation = validateReminderForm(formData);
       if (!validation.valid) {
-        alert(validation.error);
+        toast.error(validation.error || "Validation error");
         return;
       }
 
@@ -111,7 +114,7 @@ export default function EditModal() {
     >
       <DialogContent className="max-w-md max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>{MESSAGES.EDIT_REMINDER}</DialogTitle>
+          <DialogTitle>{t("edit-reminder")}</DialogTitle>
         </DialogHeader>
 
         <form
@@ -134,10 +137,10 @@ export default function EditModal() {
 
         <DialogFooter>
           <Button type="button" onClick={handleClose} variant="secondary">
-            {MESSAGES.CANCEL}
+            {t("cancel")}
           </Button>
           <Button onClick={() => handleSubmit()} disabled={!isFormValid}>
-            {MESSAGES.SAVE_CHANGES}
+            {t("save-changes")}
           </Button>
         </DialogFooter>
       </DialogContent>

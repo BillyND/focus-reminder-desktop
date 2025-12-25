@@ -1,9 +1,9 @@
 import { memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Reminder } from "@/types/reminder";
 import { useReminderStore } from "@/store/reminderStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MESSAGES } from "@/constants";
 import { getRepeatText } from "@/utils/reminder";
 import { Play, Pause, Edit2, Trash2 } from "lucide-react";
 
@@ -14,6 +14,7 @@ interface ReminderCardProps {
 export const ReminderCard = memo(function ReminderCard({
   reminder,
 }: ReminderCardProps) {
+  const { t } = useTranslation();
   const { deleteReminder, toggleReminder, setEditingReminder, globalEnabled } =
     useReminderStore();
 
@@ -88,7 +89,7 @@ export const ReminderCard = memo(function ReminderCard({
             onClick={handleTest}
             variant="ghost"
             size="icon"
-            title={MESSAGES.TEST_REMINDER}
+            title={t("test-reminder")}
           >
             <Play className="h-4 w-4" />
           </Button>
@@ -96,7 +97,7 @@ export const ReminderCard = memo(function ReminderCard({
             onClick={handleToggle}
             variant={isActive ? "default" : "ghost"}
             size="icon"
-            title={isActive ? MESSAGES.DISABLE : MESSAGES.ENABLE}
+            title={isActive ? t("disable") : t("enable")}
           >
             {isActive ? (
               <Pause className="h-4 w-4" />
@@ -108,7 +109,7 @@ export const ReminderCard = memo(function ReminderCard({
             onClick={handleEdit}
             variant="ghost"
             size="icon"
-            title={MESSAGES.EDIT}
+            title={t("edit")}
           >
             <Edit2 className="h-4 w-4" />
           </Button>
@@ -116,7 +117,7 @@ export const ReminderCard = memo(function ReminderCard({
             onClick={handleDelete}
             variant="ghost"
             size="icon"
-            title={MESSAGES.DELETE}
+            title={t("delete")}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

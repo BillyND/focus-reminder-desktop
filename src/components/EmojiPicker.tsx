@@ -1,6 +1,7 @@
 import { useState, useCallback, memo } from "react";
+import { useTranslation } from "react-i18next";
 import { PRESET_EMOJIS } from "@/types/reminder";
-import { LIMITS, MESSAGES } from "@/constants";
+import { LIMITS } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -16,6 +17,7 @@ export default memo(function EmojiPicker({
   onSelect,
   onClose,
 }: EmojiPickerProps) {
+  const { t } = useTranslation();
   const [customEmoji, setCustomEmoji] = useState("");
 
   const handleCustomEmojiSubmit = useCallback(() => {
@@ -62,7 +64,7 @@ export default memo(function EmojiPicker({
           value={customEmoji}
           onChange={(e) => setCustomEmoji(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={MESSAGES.PASTE_CUSTOM_EMOJI}
+          placeholder={t("paste-custom-emoji")}
           maxLength={LIMITS.MAX_EMOJI_LENGTH}
         />
         <Button
@@ -70,7 +72,7 @@ export default memo(function EmojiPicker({
           onClick={handleCustomEmojiSubmit}
           disabled={!customEmoji.trim()}
         >
-          {MESSAGES.OK}
+          {t("ok")}
         </Button>
       </div>
 
@@ -81,7 +83,7 @@ export default memo(function EmojiPicker({
         variant="secondary"
         className="w-full mt-4"
       >
-        {MESSAGES.CLOSE}
+        {t("close")}
       </Button>
     </Card>
   );

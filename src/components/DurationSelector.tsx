@@ -1,6 +1,6 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { DURATION_OPTIONS } from "@/types/reminder";
-import { MESSAGES } from "@/constants";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
@@ -13,9 +13,11 @@ export const DurationSelector = memo(function DurationSelector({
   displayMinutes,
   onDisplayMinutesChange,
 }: DurationSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-2">
-      <Label>{MESSAGES.DISPLAY_DURATION}</Label>
+      <Label>{t("display-duration")}</Label>
       <div className="flex gap-2 flex-wrap">
         {DURATION_OPTIONS.map((option) => (
           <Button

@@ -1,6 +1,7 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { ReminderFormData } from "@/types/reminder";
-import { REMINDER_TYPE, DEFAULTS, MESSAGES } from "@/constants";
+import { REMINDER_TYPE, DEFAULTS } from "@/constants";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -36,23 +37,25 @@ export const ReminderFormFields = memo(function ReminderFormFields({
   onAddTime,
   onRemoveTime,
 }: ReminderFormFieldsProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       {/* Message */}
       <div className="space-y-2">
-        <Label htmlFor="message">{MESSAGES.REMINDER_CONTENT}</Label>
+        <Label htmlFor="message">{t("reminder-content")}</Label>
         <Textarea
           id="message"
           value={formData.message}
           onChange={(e) => onFormDataChange({ message: e.target.value })}
-          placeholder={MESSAGES.ENTER_REMINDER_CONTENT}
+          placeholder={t("enter-reminder-content")}
           required
         />
       </div>
 
       {/* Icon Picker */}
       <div className="space-y-2">
-        <Label>{MESSAGES.ICON}</Label>
+        <Label>{t("icon")}</Label>
         <div className="flex items-center gap-3">
           <Button
             type="button"
@@ -63,7 +66,7 @@ export const ReminderFormFields = memo(function ReminderFormFields({
             <span className="text-3xl">{formData.icon}</span>
           </Button>
           <span className="text-sm text-muted-foreground">
-            {MESSAGES.CLICK_TO_CHOOSE_ICON}
+            {t("click-to-choose-icon")}
           </span>
         </div>
         {showEmojiPicker && (
@@ -77,7 +80,7 @@ export const ReminderFormFields = memo(function ReminderFormFields({
 
       {/* Color Picker */}
       <div className="space-y-2">
-        <Label>{MESSAGES.COLOR}</Label>
+        <Label>{t("color")}</Label>
         <ColorPicker
           selectedColor={formData.color}
           onSelect={(color) => onFormDataChange({ color })}

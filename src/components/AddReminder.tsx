@@ -1,7 +1,9 @@
 import { useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { useReminderStore } from "@/store/reminderStore";
 import { ReminderFormData } from "@/types/reminder";
-import { REMINDER_TYPE, DEFAULTS, TAB, MESSAGES } from "@/constants";
+import { REMINDER_TYPE, DEFAULTS, TAB } from "@/constants";
 import { PRESET_COLORS } from "@/types/reminder";
 import { validateReminderForm } from "@/utils/reminder";
 import { ReminderFormFields } from "./ReminderFormFields";
@@ -20,6 +22,7 @@ const defaultFormData: ReminderFormData = {
 };
 
 export default function AddReminder() {
+  const { t } = useTranslation();
   const { addReminder, setActiveTab } = useReminderStore();
   const [formData, setFormData] = useState<ReminderFormData>(defaultFormData);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -37,7 +40,7 @@ export default function AddReminder() {
       e.preventDefault();
       const validation = validateReminderForm(formData);
       if (!validation.valid) {
-        alert(validation.error);
+        toast.error(validation.error || "Validation error");
         return;
       }
 
@@ -108,10 +111,10 @@ export default function AddReminder() {
             variant="secondary"
             className="flex-1"
           >
-            {MESSAGES.CANCEL}
+            {t("cancel")}
           </Button>
           <Button type="submit" className="flex-1" disabled={!isFormValid}>
-            {MESSAGES.SAVE_REMINDER}
+            {t("save-reminder")}
           </Button>
         </div>
       </form>

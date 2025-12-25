@@ -1,11 +1,13 @@
 import { memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useReminderStore } from "@/store/reminderStore";
 import { ReminderCard } from "./ReminderCard";
 import { Button } from "@/components/ui/button";
-import { TAB, MESSAGES } from "@/constants";
+import { TAB } from "@/constants";
 import { Plus, Inbox } from "lucide-react";
 
 export default memo(function ReminderList() {
+  const { t } = useTranslation();
   const { reminders, setActiveTab } = useReminderStore();
 
   const handleAddClick = useCallback(() => {
@@ -17,14 +19,14 @@ export default memo(function ReminderList() {
       <div className="h-full flex flex-col items-center justify-center p-8 text-center">
         <Inbox className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold mb-2">
-          {MESSAGES.NO_REMINDERS_TITLE}
+          {t("no-reminders-title")}
         </h2>
         <p className="text-muted-foreground mb-6">
-          {MESSAGES.NO_REMINDERS_DESCRIPTION}
+          {t("no-reminders-description")}
         </p>
         <Button onClick={handleAddClick}>
           <Plus className="mr-2 h-4 w-4" />
-          {MESSAGES.ADD_REMINDER}
+          {t("add-reminder")}
         </Button>
       </div>
     );

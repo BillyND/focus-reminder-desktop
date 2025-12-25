@@ -163,7 +163,6 @@ export const useReminderStore = create<ReminderStore>()(
         // Dynamic import to avoid circular dependency
         const settingsStore = window.__settingsStore;
         const settings = settingsStore?.getState()?.settings || {
-          darkMode: false,
           soundEnabled: true,
           soundVolume: DEFAULTS.SOUND_VOLUME,
         };
@@ -171,7 +170,6 @@ export const useReminderStore = create<ReminderStore>()(
         const data = {
           reminders,
           settings: {
-            darkMode: settings.darkMode,
             enabled: globalEnabled,
             soundEnabled: settings.soundEnabled,
             soundVolume: settings.soundVolume || DEFAULTS.SOUND_VOLUME,
@@ -216,7 +214,6 @@ export const useReminderStore = create<ReminderStore>()(
           const settingsStore = window.__settingsStore;
           if (settingsStore) {
             settingsStore.getState().updateSettings({
-              darkMode: data.settings.darkMode ?? false,
               soundEnabled: data.settings.soundEnabled ?? true,
               soundVolume: data.settings.soundVolume ?? DEFAULTS.SOUND_VOLUME,
             });
@@ -236,7 +233,6 @@ export const useReminderStore = create<ReminderStore>()(
         const settingsStore = window.__settingsStore;
         if (settingsStore) {
           settingsStore.getState().updateSettings({
-            darkMode: false,
             soundEnabled: true,
             soundVolume: DEFAULTS.SOUND_VOLUME,
           });

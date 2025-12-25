@@ -16,16 +16,6 @@ export const TAB = {
 } as const;
 
 // ============================================
-// THEME TYPES
-// ============================================
-export const THEME = {
-  LIGHT: "light",
-  DARK: "dark",
-} as const;
-
-export type ThemeType = (typeof THEME)[keyof typeof THEME];
-
-// ============================================
 // STORAGE KEYS
 // ============================================
 export const STORAGE_KEYS = {
@@ -102,8 +92,6 @@ export const MESSAGES = {
   DATA_RESET_SUCCESS: "All data has been reset!",
   CONFIRM_RESET: "Confirm reset?",
   RESET_ALL: "Reset All",
-  DARK_MODE: "Dark Mode",
-  DARK_MODE_DESCRIPTION: "Easier on the eyes in low light",
   NOTIFICATION_SOUND: "Notification Sound",
   NOTIFICATION_SOUND_DESCRIPTION: "Play sound when showing reminders",
   NOTIFICATION_VOLUME: "Notification Volume",

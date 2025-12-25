@@ -13,10 +13,10 @@ export interface Reminder {
 }
 
 export interface AppSettings {
-  darkMode: boolean;
   enabled: boolean;
   soundEnabled: boolean;
   soundVolume?: number; // 0-100
+  language?: string; // Language code (en, vi, fr, etc.)
 }
 
 export interface AppData {
