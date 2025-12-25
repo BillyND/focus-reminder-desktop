@@ -38,11 +38,11 @@ export async function playSoundFromMainWindow(volume: number): Promise<void> {
       await mainWindow.webContents.executeJavaScript(`
         (async () => {
           try {
-            const soundModule = await import('/src/utils/sound.ts');
-            if (soundModule && soundModule.playNotificationSound) {
-              await soundModule.playNotificationSound(${volume});
+            // Use exposed sound functions from window object
+            if (window.__soundFunctions && window.__soundFunctions.playNotificationSound) {
+              await window.__soundFunctions.playNotificationSound(${volume});
             } else {
-              console.error('===> Sound utility function not found');
+              console.error('===> Sound functions not found on window object');
             }
           } catch (error) {
             console.error('===> Error playing sound from main window:', error);
@@ -61,15 +61,19 @@ export async function stopSoundFromMainWindow(): Promise<void> {
   if (mainWindow && !mainWindow.isDestroyed()) {
     try {
       await mainWindow.webContents.executeJavaScript(`
-        (async () => {
+        (() => {
           try {
-            const soundModule = await import('/src/utils/sound.ts');
-            if (soundModule && soundModule.stopAllSounds) {
-              soundModule.stopAllSounds();
-            } else if (soundModule && soundModule.stopRepeatedSound) {
-              soundModule.stopRepeatedSound();
+            // Use exposed sound functions from window object
+            if (window.__soundFunctions) {
+              if (window.__soundFunctions.stopAllSounds) {
+                window.__soundFunctions.stopAllSounds();
+              } else if (window.__soundFunctions.stopRepeatedSound) {
+                window.__soundFunctions.stopRepeatedSound();
+              } else {
+                console.error('===> Sound stop function not found');
+              }
             } else {
-              console.error('===> Sound stop function not found');
+              console.error('===> Sound functions not found on window object');
             }
           } catch (error) {
             console.error('===> Error stopping sound from main window:', error);

@@ -64,7 +64,7 @@
   "dutch": "Nederlands",
   "vietnamese": "Vietnamees",
   "language": "Taal",
-  "duration-minute": "{{minute}} minuut",
-  "duration-minutes": "{{minute}} minuten"
+  "duration-minute": "{{duration}} minuut",
+  "duration-minutes": "{{duration}} minuten"
 }
 

@@ -4,14 +4,20 @@
 
 // Get sound file path - works in both dev and production
 function getSoundFilePath(): string {
-  // In Vite, public folder files are served from root
-  // Try to use URL constructor for better path resolution
-  try {
-    // For Vite dev server and production build
-    return new URL("/alarm.mp3", window.location.origin).href;
-  } catch {
-    // Fallback to relative path
-    return "/alarm.mp3";
+  // Check if we're in production (file:// protocol) or dev (http:// protocol)
+  const isProduction = window.location.protocol === "file:";
+  
+  if (isProduction) {
+    // In production Electron app, use relative path
+    // File is in the same directory as index.html in dist folder
+    return "./alarm.mp3";
+  } else {
+    // In dev mode with Vite dev server, use absolute path
+    try {
+      return new URL("/alarm.mp3", window.location.origin).href;
+    } catch {
+      return "/alarm.mp3";
+    }
   }
 }
 

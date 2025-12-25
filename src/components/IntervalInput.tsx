@@ -39,7 +39,9 @@ export const IntervalInput = memo(function IntervalInput({
               variant={interval === mins ? "default" : "outline"}
               size="sm"
             >
-              {mins}m
+              {mins > 1
+                ? t("duration-minutes", { duration: mins })
+                : t("duration-minute", { duration: mins })}
             </Button>
           ))}
         </div>

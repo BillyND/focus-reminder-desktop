@@ -33,9 +33,20 @@ interface SettingsStoreAPI {
   };
 }
 
+interface SoundFunctionsAPI {
+  playNotificationSound: (volume: number) => Promise<void>;
+  playNotificationSoundRepeatedly: (
+    volume: number,
+    intervalMs?: number
+  ) => () => void;
+  stopAllSounds: () => void;
+  stopRepeatedSound: () => void;
+}
+
 declare global {
   interface Window {
     electronAPI?: ElectronAPI;
     __settingsStore?: SettingsStoreAPI;
+    __soundFunctions?: SoundFunctionsAPI;
   }
 }

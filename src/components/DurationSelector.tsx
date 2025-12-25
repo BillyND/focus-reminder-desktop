@@ -27,9 +27,9 @@ export const DurationSelector = memo(function DurationSelector({
             variant={displayMinutes === option.value ? "default" : "outline"}
             size="sm"
           >
-            {option.value === 1
-              ? t("duration-minute", { minute: option.value })
-              : t("duration-minutes", { minute: option.value })}
+            {option.value > 1
+              ? t("duration-minutes", { duration: option.value })
+              : t("duration-minute", { duration: option.value })}
           </Button>
         ))}
       </div>
