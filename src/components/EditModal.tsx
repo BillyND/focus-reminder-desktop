@@ -1,130 +1,131 @@
-import { useState, useEffect } from 'react'
-import { useReminderStore } from '../store/reminderStore'
-import { DURATION_OPTIONS, Reminder } from '../types/reminder'
-import EmojiPicker from './EmojiPicker'
-import ColorPicker from './ColorPicker'
+import { useState, useEffect } from "react";
+import { useReminderStore } from "@/store/reminderStore";
+import { DURATION_OPTIONS, Reminder } from "@/types/reminder";
+import EmojiPicker from "./EmojiPicker";
+import ColorPicker from "./ColorPicker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Timer, Clock, X } from "lucide-react";
 
 export default function EditModal() {
-  const { editingReminder, setEditingReminder, updateReminder } = useReminderStore()
-  const [formData, setFormData] = useState<Reminder | null>(null)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [newTime, setNewTime] = useState('09:00')
+  const { editingReminder, setEditingReminder, updateReminder } =
+    useReminderStore();
+  const [formData, setFormData] = useState<Reminder | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [newTime, setNewTime] = useState("09:00");
 
   useEffect(() => {
     if (editingReminder) {
-      setFormData({ ...editingReminder })
+      setFormData({ ...editingReminder });
       if (editingReminder.times && editingReminder.times.length > 0) {
-        setNewTime(editingReminder.times[editingReminder.times.length - 1])
+        setNewTime(editingReminder.times[editingReminder.times.length - 1]);
       }
     }
-  }, [editingReminder])
+  }, [editingReminder]);
 
-  if (!formData) return null
+  if (!formData) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.message.trim()) return
-    if (formData.type === 'scheduled' && (!formData.times || formData.times.length === 0)) {
-      alert('Vui lòng thêm ít nhất một thời gian nhắc nhở!')
-      return
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!formData.message.trim()) return;
+    if (
+      formData.type === "scheduled" &&
+      (!formData.times || formData.times.length === 0)
+    ) {
+      alert("Please add at least one reminder time!");
+      return;
     }
 
-    updateReminder(formData.id, formData)
-    setEditingReminder(null)
-  }
+    updateReminder(formData.id, formData);
+    setEditingReminder(null);
+  };
 
   const handleClose = () => {
-    setEditingReminder(null)
-  }
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      handleClose()
-    }
-  }
+    setEditingReminder(null);
+  };
 
   const addTime = () => {
     if (newTime && formData.times && !formData.times.includes(newTime)) {
       setFormData({
         ...formData,
         times: [...formData.times, newTime].sort(),
-      })
-      setNewTime('09:00')
+      });
+      setNewTime("09:00");
     } else if (newTime && !formData.times) {
       setFormData({
         ...formData,
         times: [newTime],
-      })
-      setNewTime('09:00')
+      });
+      setNewTime("09:00");
     }
-  }
+  };
 
   const removeTime = (time: string) => {
     if (formData.times) {
       setFormData({
         ...formData,
         times: formData.times.filter((t) => t !== time),
-      })
+      });
     }
-  }
+  };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={handleBackdropClick}
+    <Dialog
+      open={!!editingReminder}
+      onOpenChange={(open) => !open && handleClose()}
     >
-      <div className="bg-white dark:bg-dark-card rounded-2xl w-full max-w-md max-h-[90vh] overflow-hidden animate-in">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-border">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
-            Chỉnh sửa nhắc nhở
-          </h2>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 dark:text-dark-muted">
-              <path d="M1 1L13 13M1 13L13 1" />
-            </svg>
-          </button>
-        </div>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>Edit Reminder</DialogTitle>
+        </DialogHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 overflow-y-auto max-h-[calc(90vh-180px)] pr-2"
+        >
           {/* Message */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-              Nội dung nhắc nhở
-            </label>
-            <textarea
+            <Label htmlFor="edit-message">Reminder Content</Label>
+            <Textarea
+              id="edit-message"
               value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Nhập nội dung nhắc nhở..."
-              className="w-full h-20"
+              onChange={(e) =>
+                setFormData({ ...formData, message: e.target.value })
+              }
+              placeholder="Enter reminder content..."
               required
             />
           </div>
 
           {/* Icon */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-              Biểu tượng
-            </label>
+            <Label>Icon</Label>
             <div className="flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="w-12 h-12 text-2xl bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-xl hover:bg-gray-50 dark:hover:bg-dark-hover transition-colors flex items-center justify-center"
+                variant="outline"
+                size="lg"
               >
-                {formData.icon}
-              </button>
+                <span className="text-2xl">{formData.icon}</span>
+              </Button>
             </div>
             {showEmojiPicker && (
               <EmojiPicker
                 selectedEmoji={formData.icon}
                 onSelect={(icon) => {
-                  setFormData({ ...formData, icon })
-                  setShowEmojiPicker(false)
+                  setFormData({ ...formData, icon });
+                  setShowEmojiPicker(false);
                 }}
                 onClose={() => setShowEmojiPicker(false)}
               />
@@ -133,9 +134,7 @@ export default function EditModal() {
 
           {/* Color */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-              Màu sắc
-            </label>
+            <Label>Color</Label>
             <ColorPicker
               selectedColor={formData.color}
               onSelect={(color) => setFormData({ ...formData, color })}
@@ -144,86 +143,75 @@ export default function EditModal() {
 
           {/* Type */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-              Loại nhắc nhở
-            </label>
+            <Label>Reminder Type</Label>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
-                onClick={() => setFormData({ ...formData, type: 'interval' })}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                  formData.type === 'interval'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-muted hover:bg-gray-50 dark:hover:bg-dark-hover'
-                }`}
+                onClick={() => setFormData({ ...formData, type: "interval" })}
+                variant={formData.type === "interval" ? "default" : "outline"}
+                className="flex-1"
+                size="sm"
               >
-                ⏱️ Lặp lại
-              </button>
-              <button
+                <Timer className="mr-2 h-4 w-4" />
+                Repeat
+              </Button>
+              <Button
                 type="button"
-                onClick={() => setFormData({ ...formData, type: 'scheduled' })}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                  formData.type === 'scheduled'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-muted hover:bg-gray-50 dark:hover:bg-dark-hover'
-                }`}
+                onClick={() => setFormData({ ...formData, type: "scheduled" })}
+                variant={formData.type === "scheduled" ? "default" : "outline"}
+                className="flex-1"
+                size="sm"
               >
-                🕐 Giờ cố định
-              </button>
+                <Clock className="mr-2 h-4 w-4" />
+                Fixed time
+              </Button>
             </div>
           </div>
 
           {/* Interval or Scheduled Times */}
-          {formData.type === 'interval' ? (
+          {formData.type === "interval" ? (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-                Lặp lại mỗi (phút)
-              </label>
-              <input
+              <Label htmlFor="edit-interval">Repeat every (minutes)</Label>
+              <Input
+                id="edit-interval"
                 type="number"
                 min="1"
                 max="1440"
                 value={formData.interval || 30}
-                onChange={(e) => setFormData({ ...formData, interval: parseInt(e.target.value) || 1 })}
-                className="w-24"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    interval: parseInt(e.target.value) || 1,
+                  })
+                }
               />
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-                Thời gian nhắc nhở
-              </label>
+              <Label>Reminder Time</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="time"
                   value={newTime}
                   onChange={(e) => setNewTime(e.target.value)}
-                  className="w-32"
                 />
-                <button
-                  type="button"
-                  onClick={addTime}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Thêm
-                </button>
+                <Button type="button" onClick={addTime} size="sm">
+                  Add
+                </Button>
               </div>
               {formData.times && formData.times.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.times.map((time) => (
-                    <span
-                      key={time}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm"
-                    >
+                    <Badge key={time} variant="secondary" className="gap-1">
                       {time}
                       <button
                         type="button"
                         onClick={() => removeTime(time)}
-                        className="hover:text-blue-900 dark:hover:text-blue-100"
+                        className="hover:text-foreground"
                       >
-                        ×
+                        <X className="h-3 w-3" />
                       </button>
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               )}
@@ -232,46 +220,41 @@ export default function EditModal() {
 
           {/* Duration */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-dark-text">
-              Thời gian hiển thị
-            </label>
-            <div className="flex gap-2">
+            <Label>Display duration</Label>
+            <div className="flex gap-2 flex-wrap">
               {DURATION_OPTIONS.map((option) => (
-                <button
+                <Button
                   key={option.value}
                   type="button"
-                  onClick={() => setFormData({ ...formData, displayMinutes: option.value })}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  onClick={() =>
+                    setFormData({ ...formData, displayMinutes: option.value })
+                  }
+                  variant={
                     formData.displayMinutes === option.value
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-muted hover:bg-gray-50 dark:hover:bg-dark-hover'
-                  }`}
+                      ? "default"
+                      : "outline"
+                  }
+                  size="sm"
                 >
                   {option.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-dark-border">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="btn btn-secondary flex-1"
-          >
-            Hủy bỏ
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="btn btn-primary flex-1"
+        <DialogFooter>
+          <Button type="button" onClick={handleClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleSubmit()}
             disabled={!formData.message.trim()}
           >
-            Lưu thay đổi
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

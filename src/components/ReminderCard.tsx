@@ -1,5 +1,9 @@
-import { Reminder } from "../types/reminder";
-import { useReminderStore } from "../store/reminderStore";
+import { Reminder } from "@/types/reminder";
+import { useReminderStore } from "@/store/reminderStore";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+import { Play, Pause, Edit2, Trash2 } from "lucide-react";
 
 interface ReminderCardProps {
   reminder: Reminder;
@@ -11,7 +15,7 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
 
   const getRepeatText = () => {
     if (reminder.type === "interval" && reminder.interval) {
-      return `Lặp lại mỗi ${reminder.interval} phút`;
+      return `Repeat every ${reminder.interval} minutes`;
     }
     if (
       reminder.type === "scheduled" &&
@@ -19,9 +23,9 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
       reminder.times.length > 0
     ) {
       if (reminder.times.length === 1) {
-        return `Hàng ngày lúc ${reminder.times[0]}`;
+        return `Daily at ${reminder.times[0]}`;
       }
-      return `${reminder.times.length} lần mỗi ngày`;
+      return `${reminder.times.length} times a day`;
     }
     return "";
   };
@@ -38,9 +42,9 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
   const isActive = reminder.enabled && globalEnabled;
 
   return (
-    <div
+    <Card
       className={`
-        card group relative overflow-hidden
+        group relative overflow-hidden transition-opacity
         ${!isActive ? "opacity-60" : ""}
       `}
     >
@@ -50,13 +54,13 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
         style={{ backgroundColor: reminder.color }}
       />
 
-      <div className="flex items-start gap-3 pl-3">
+      <div className="flex items-start gap-3 pl-3 p-4">
         {/* Icon */}
         <div className="text-3xl flex-shrink-0 mt-0.5">{reminder.icon}</div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 dark:text-dark-text text-base leading-snug mb-1">
+          <p className="font-semibold text-base leading-snug mb-1">
             {reminder.message}
           </p>
           <div className="flex items-center gap-2">
@@ -64,54 +68,60 @@ export default function ReminderCard({ reminder }: ReminderCardProps) {
               className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: reminder.color }}
             />
-            <span className="text-xs text-gray-500 dark:text-dark-muted truncate">
+            <span className="text-xs text-muted-foreground truncate">
               {getRepeatText()}
             </span>
-            <span className="text-xs text-gray-500 dark:text-dark-muted">
-              • {reminder.displayMinutes}p
+            <span className="text-xs text-muted-foreground">
+              • {reminder.displayMinutes}m
             </span>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
+          <Button
             onClick={handleTest}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
-            title="Test nhắc nhở"
+            variant="ghost"
+            size="icon"
+            title="Test reminder"
           >
-            <span className="text-sm">▶️</span>
-          </button>
-          <button
+            <Play className="h-4 w-4" />
+          </Button>
+          <Button
             onClick={() => toggleReminder(reminder.id)}
-            className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors ${
-              isActive ? "text-green-500" : "text-gray-400 dark:text-dark-muted"
-            }`}
-            title={isActive ? "Tắt" : "Bật"}
+            variant={isActive ? "default" : "ghost"}
+            size="icon"
+            title={isActive ? "Disable" : "Enable"}
           >
-            <span className="text-sm">{isActive ? "⏸️" : "▶️"}</span>
-          </button>
-          <button
+            {isActive ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
             onClick={() => setEditingReminder(reminder)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors text-yellow-500"
-            title="Chỉnh sửa"
+            variant="ghost"
+            size="icon"
+            title="Edit"
           >
-            <span className="text-sm">✏️</span>
-          </button>
-          <button
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          <Button
             onClick={() => deleteReminder(reminder.id)}
-            className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-gray-400 dark:text-dark-muted hover:text-red-500"
-            title="Xóa"
+            variant="ghost"
+            size="icon"
+            title="Delete"
           >
-            <span className="text-sm">🗑️</span>
-          </button>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       {/* Status indicator */}
       {isActive && (
-        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
       )}
-    </div>
+    </Card>
   );
 }

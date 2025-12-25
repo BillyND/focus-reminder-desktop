@@ -1,14 +1,14 @@
-import { app, BrowserWindow, ipcMain, Notification, screen } from 'electron'
-import path from 'path'
+import { app, BrowserWindow, ipcMain, Notification, screen } from "electron";
+import path from "path";
 
-let mainWindow: BrowserWindow | null = null
-let overlayWindow: BrowserWindow | null = null
-let reminderIntervals: Map<string, NodeJS.Timeout> = new Map()
-let fixedTimeCheckers: Map<string, NodeJS.Timeout> = new Map()
-let lastFixedTimeTriggers: Map<string, string> = new Map() // Track last trigger time to prevent duplicates
+let mainWindow: BrowserWindow | null = null;
+let overlayWindow: BrowserWindow | null = null;
+let reminderIntervals: Map<string, NodeJS.Timeout> = new Map();
+let fixedTimeCheckers: Map<string, NodeJS.Timeout> = new Map();
+let lastFixedTimeTriggers: Map<string, string> = new Map(); // Track last trigger time to prevent duplicates
 
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
-const isDev = !!VITE_DEV_SERVER_URL
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+const isDev = !!VITE_DEV_SERVER_URL;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -18,34 +18,39 @@ function createMainWindow() {
     minHeight: 500,
     frame: false,
     transparent: false,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: "#1a1a2e",
     resizable: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    icon: path.join(__dirname, '../public/icon.png'),
-  })
+    icon: path.join(__dirname, "../public/icon.png"),
+  });
 
   if (VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(VITE_DEV_SERVER_URL)
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    mainWindow.loadURL(VITE_DEV_SERVER_URL);
+    mainWindow.webContents.openDevTools({ mode: "detach" });
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
-  mainWindow.on('closed', () => {
-    mainWindow = null
-  })
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
 }
 
-function createOverlayWindow(emoji: string, message: string, color: string, durationMinutes: number) {
+function createOverlayWindow(
+  emoji: string,
+  message: string,
+  color: string,
+  durationMinutes: number
+) {
   if (overlayWindow) {
-    overlayWindow.close()
+    overlayWindow.close();
   }
 
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   overlayWindow = new BrowserWindow({
     width: width,
@@ -59,14 +64,14 @@ function createOverlayWindow(emoji: string, message: string, color: string, dura
     focusable: true,
     fullscreen: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
-  })
+  });
 
-  overlayWindow.setVisibleOnAllWorkspaces(true)
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver')
+  overlayWindow.setVisibleOnAllWorkspaces(true);
+  overlayWindow.setAlwaysOnTop(true, "screen-saver");
 
   const overlayHTML = `
     <!DOCTYPE html>
@@ -156,7 +161,7 @@ function createOverlayWindow(emoji: string, message: string, color: string, dura
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
-        <div class="close-hint">Nhấn vào bất kỳ đâu hoặc ESC để đóng</div>
+        <div class="close-hint">Click anywhere or ESC to close</div>
       </div>
       <script>
         // Close handler will be injected after preload loads
@@ -176,27 +181,31 @@ function createOverlayWindow(emoji: string, message: string, color: string, dura
       </script>
     </body>
     </html>
-  `
+  `;
 
-  overlayWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(overlayHTML)}`)
+  overlayWindow.loadURL(
+    `data:text/html;charset=utf-8,${encodeURIComponent(overlayHTML)}`
+  );
 
   // Auto-close after duration
   const autoCloseTimeout = setTimeout(() => {
     if (overlayWindow && !overlayWindow.isDestroyed()) {
-      overlayWindow.close()
-      overlayWindow = null
+      overlayWindow.close();
+      overlayWindow = null;
     }
-  }, durationMinutes * 60 * 1000)
+  }, durationMinutes * 60 * 1000);
 
-  overlayWindow.on('closed', () => {
-    clearTimeout(autoCloseTimeout)
-    overlayWindow = null
-  })
+  overlayWindow.on("closed", () => {
+    clearTimeout(autoCloseTimeout);
+    overlayWindow = null;
+  });
 
   // Handle close via IPC
-  overlayWindow.webContents.on('did-finish-load', () => {
+  overlayWindow.webContents.on("did-finish-load", () => {
     // Inject close handler that uses IPC
-    overlayWindow?.webContents.executeJavaScript(`
+    overlayWindow?.webContents
+      .executeJavaScript(
+        `
       (function() {
         function closeOverlay() {
           window.electronAPI?.closeOverlay();
@@ -208,186 +217,213 @@ function createOverlayWindow(emoji: string, message: string, color: string, dura
           }
         });
       })();
-    `).catch(() => {
-      console.log('===> Failed to inject overlay close handler')
-    })
-  })
+    `
+      )
+      .catch(() => {
+        console.log("===> Failed to inject overlay close handler");
+      });
+  });
 }
 
-function showNotification(emoji: string, message: string, color: string, durationMinutes: number) {
+function showNotification(
+  emoji: string,
+  message: string,
+  color: string,
+  durationMinutes: number
+) {
   // Try native notification first
   if (Notification.isSupported()) {
     const notification = new Notification({
-      title: 'Focus Reminder Desktop',
+      title: "Focus Reminder Desktop",
       body: `${emoji} ${message}`,
       silent: false,
-      urgency: 'critical',
-    })
+      urgency: "critical",
+    });
 
-    notification.show()
+    notification.show();
 
-    notification.on('click', () => {
+    notification.on("click", () => {
       // Show overlay on click for stronger reminder
-      createOverlayWindow(emoji, message, color, durationMinutes)
-    })
+      createOverlayWindow(emoji, message, color, durationMinutes);
+    });
   }
 
   // Also show overlay for stronger reminder
-  createOverlayWindow(emoji, message, color, durationMinutes)
+  createOverlayWindow(emoji, message, color, durationMinutes);
 }
 
 function scheduleReminder(reminder: {
-  id: string
-  message: string
-  icon?: string
-  emoji?: string // Legacy support
-  color: string
-  type: 'interval' | 'scheduled' | 'fixed' // 'fixed' for legacy
-  interval?: number
-  intervalMinutes?: number // Legacy
-  times?: string[]
-  fixedTime?: string // Legacy
-  displayMinutes?: number
-  durationMinutes?: number // Legacy
-  enabled: boolean
+  id: string;
+  message: string;
+  icon?: string;
+  emoji?: string; // Legacy support
+  color: string;
+  type: "interval" | "scheduled" | "fixed"; // 'fixed' for legacy
+  interval?: number;
+  intervalMinutes?: number; // Legacy
+  times?: string[];
+  fixedTime?: string; // Legacy
+  displayMinutes?: number;
+  durationMinutes?: number; // Legacy
+  enabled: boolean;
 }) {
   // Clear existing scheduler for this reminder
-  clearReminderScheduler(reminder.id)
+  clearReminderScheduler(reminder.id);
 
-  if (!reminder.enabled) return
+  if (!reminder.enabled) return;
 
-  const icon = reminder.icon || reminder.emoji || '💧'
-  const displayMinutes = reminder.displayMinutes || reminder.durationMinutes || 1
+  const icon = reminder.icon || reminder.emoji || "💧";
+  const displayMinutes =
+    reminder.displayMinutes || reminder.durationMinutes || 1;
 
-  if (reminder.type === 'interval' && (reminder.interval || reminder.intervalMinutes)) {
+  if (
+    reminder.type === "interval" &&
+    (reminder.interval || reminder.intervalMinutes)
+  ) {
     // Interval-based reminder
-    const intervalMinutes = reminder.interval || reminder.intervalMinutes || 30
-    const intervalMs = intervalMinutes * 60 * 1000
+    const intervalMinutes = reminder.interval || reminder.intervalMinutes || 30;
+    const intervalMs = intervalMinutes * 60 * 1000;
 
     const intervalId = setInterval(() => {
-      showNotification(icon, reminder.message, reminder.color, displayMinutes)
-    }, intervalMs)
+      showNotification(icon, reminder.message, reminder.color, displayMinutes);
+    }, intervalMs);
 
-    reminderIntervals.set(reminder.id, intervalId)
-  } else if ((reminder.type === 'scheduled' && reminder.times && reminder.times.length > 0) ||
-             (reminder.type === 'fixed' && reminder.fixedTime)) {
+    reminderIntervals.set(reminder.id, intervalId);
+  } else if (
+    (reminder.type === "scheduled" &&
+      reminder.times &&
+      reminder.times.length > 0) ||
+    (reminder.type === "fixed" && reminder.fixedTime)
+  ) {
     // Scheduled reminder with multiple times or legacy fixed time
-    const times = reminder.type === 'scheduled' && reminder.times 
-      ? reminder.times 
-      : reminder.fixedTime 
-        ? [reminder.fixedTime] 
-        : []
+    const times =
+      reminder.type === "scheduled" && reminder.times
+        ? reminder.times
+        : reminder.fixedTime
+        ? [reminder.fixedTime]
+        : [];
 
     // Check every minute
     const checkInterval = setInterval(() => {
-      const now = new Date()
-      const currentTimeKey = `${now.getHours()}:${now.getMinutes()}`
-      const lastTrigger = lastFixedTimeTriggers.get(reminder.id)
+      const now = new Date();
+      const currentTimeKey = `${now.getHours()}:${now.getMinutes()}`;
+      const lastTrigger = lastFixedTimeTriggers.get(reminder.id);
 
       // Check if current time matches any scheduled time
       const shouldTrigger = times.some((time) => {
-        const [hours, minutes] = time.split(':').map(Number)
-        return now.getHours() === hours && now.getMinutes() === minutes
-      })
+        const [hours, minutes] = time.split(":").map(Number);
+        return now.getHours() === hours && now.getMinutes() === minutes;
+      });
 
       // Only trigger if it's the right time and we haven't triggered in this minute
       if (shouldTrigger && lastTrigger !== currentTimeKey) {
-        lastFixedTimeTriggers.set(reminder.id, currentTimeKey)
-        showNotification(icon, reminder.message, reminder.color, displayMinutes)
+        lastFixedTimeTriggers.set(reminder.id, currentTimeKey);
+        showNotification(
+          icon,
+          reminder.message,
+          reminder.color,
+          displayMinutes
+        );
       }
-    }, 60000) // Check every minute
+    }, 60000); // Check every minute
 
-    fixedTimeCheckers.set(reminder.id, checkInterval)
+    fixedTimeCheckers.set(reminder.id, checkInterval);
   }
 }
 
 function clearReminderScheduler(id: string) {
   if (reminderIntervals.has(id)) {
-    clearInterval(reminderIntervals.get(id))
-    reminderIntervals.delete(id)
+    clearInterval(reminderIntervals.get(id));
+    reminderIntervals.delete(id);
   }
   if (fixedTimeCheckers.has(id)) {
-    clearInterval(fixedTimeCheckers.get(id))
-    fixedTimeCheckers.delete(id)
+    clearInterval(fixedTimeCheckers.get(id));
+    fixedTimeCheckers.delete(id);
   }
-  lastFixedTimeTriggers.delete(id)
+  lastFixedTimeTriggers.delete(id);
 }
 
 function clearAllSchedulers() {
-  reminderIntervals.forEach((interval) => clearInterval(interval))
-  fixedTimeCheckers.forEach((interval) => clearInterval(interval))
-  reminderIntervals.clear()
-  fixedTimeCheckers.clear()
-  lastFixedTimeTriggers.clear()
+  reminderIntervals.forEach((interval) => clearInterval(interval));
+  fixedTimeCheckers.forEach((interval) => clearInterval(interval));
+  reminderIntervals.clear();
+  fixedTimeCheckers.clear();
+  lastFixedTimeTriggers.clear();
 }
 
 // IPC Handlers
-ipcMain.handle('schedule-reminder', (_, reminder) => {
-  scheduleReminder(reminder)
-  return true
-})
+ipcMain.handle("schedule-reminder", (_, reminder) => {
+  scheduleReminder(reminder);
+  return true;
+});
 
-ipcMain.handle('clear-reminder', (_, id: string) => {
-  clearReminderScheduler(id)
-  return true
-})
+ipcMain.handle("clear-reminder", (_, id: string) => {
+  clearReminderScheduler(id);
+  return true;
+});
 
-ipcMain.handle('clear-all-reminders', () => {
-  clearAllSchedulers()
-  return true
-})
+ipcMain.handle("clear-all-reminders", () => {
+  clearAllSchedulers();
+  return true;
+});
 
-ipcMain.handle('show-notification', (_, { emoji, message, color, durationMinutes }) => {
-  showNotification(emoji, message, color, durationMinutes)
-  return true
-})
+ipcMain.handle(
+  "show-notification",
+  (_, { emoji, message, color, durationMinutes }) => {
+    showNotification(emoji, message, color, durationMinutes);
+    return true;
+  }
+);
 
-ipcMain.handle('test-reminder', (_, { emoji, message, color, durationMinutes }) => {
-  showNotification(emoji, message, color, durationMinutes)
-  return true
-})
+ipcMain.handle(
+  "test-reminder",
+  (_, { emoji, message, color, durationMinutes }) => {
+    showNotification(emoji, message, color, durationMinutes);
+    return true;
+  }
+);
 
-ipcMain.on('close-overlay', () => {
+ipcMain.on("close-overlay", () => {
   if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.close()
-    overlayWindow = null
+    overlayWindow.close();
+    overlayWindow = null;
   }
-})
+});
 
-ipcMain.on('window-minimize', () => {
-  mainWindow?.minimize()
-})
+ipcMain.on("window-minimize", () => {
+  mainWindow?.minimize();
+});
 
-ipcMain.on('window-maximize', () => {
+ipcMain.on("window-maximize", () => {
   if (mainWindow?.isMaximized()) {
-    mainWindow.unmaximize()
+    mainWindow.unmaximize();
   } else {
-    mainWindow?.maximize()
+    mainWindow?.maximize();
   }
-})
+});
 
-ipcMain.on('window-close', () => {
-  mainWindow?.close()
-})
+ipcMain.on("window-close", () => {
+  mainWindow?.close();
+});
 
 // App lifecycle
 app.whenReady().then(() => {
-  createMainWindow()
+  createMainWindow();
 
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow()
+      createMainWindow();
     }
-  })
-})
+  });
+});
 
-app.on('window-all-closed', () => {
-  clearAllSchedulers()
-  if (process.platform !== 'darwin') {
-    app.quit()
+app.on("window-all-closed", () => {
+  clearAllSchedulers();
+  if (process.platform !== "darwin") {
+    app.quit();
   }
-})
+});
 
-app.on('before-quit', () => {
-  clearAllSchedulers()
-})
+app.on("before-quit", () => {
+  clearAllSchedulers();
+});

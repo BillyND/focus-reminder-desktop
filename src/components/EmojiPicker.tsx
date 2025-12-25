@@ -1,81 +1,84 @@
-import { useState } from 'react'
-import { PRESET_EMOJIS } from '../types/reminder'
+import { useState } from "react";
+import { PRESET_EMOJIS } from "@/types/reminder";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 interface EmojiPickerProps {
-  selectedEmoji: string
-  onSelect: (emoji: string) => void
-  onClose: () => void
+  selectedEmoji: string;
+  onSelect: (emoji: string) => void;
+  onClose: () => void;
 }
 
-export default function EmojiPicker({ selectedEmoji, onSelect, onClose }: EmojiPickerProps) {
-  const [customEmoji, setCustomEmoji] = useState('')
+export default function EmojiPicker({
+  selectedEmoji,
+  onSelect,
+  onClose,
+}: EmojiPickerProps) {
+  const [customEmoji, setCustomEmoji] = useState("");
 
   const handleCustomEmojiSubmit = () => {
     if (customEmoji.trim()) {
-      onSelect(customEmoji.trim())
-      setCustomEmoji('')
+      onSelect(customEmoji.trim());
+      setCustomEmoji("");
     }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleCustomEmojiSubmit()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleCustomEmojiSubmit();
     }
-    if (e.key === 'Escape') {
-      onClose()
+    if (e.key === "Escape") {
+      onClose();
     }
-  }
+  };
 
   return (
-    <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 animate-in">
+    <Card className="p-4">
       {/* Preset Emojis */}
       <div className="grid grid-cols-6 gap-2 mb-4">
         {PRESET_EMOJIS.map((emoji) => (
-          <button
+          <Button
             key={emoji}
             type="button"
             onClick={() => onSelect(emoji)}
-            className={`w-10 h-10 text-xl flex items-center justify-center rounded-lg transition-all ${
-              selectedEmoji === emoji
-                ? 'bg-blue-500 dark:bg-accent-purple scale-110'
-                : 'hover:bg-gray-100 dark:hover:bg-dark-hover'
-            }`}
+            variant={selectedEmoji === emoji ? "default" : "ghost"}
+            size="icon"
           >
-            {emoji}
-          </button>
+            <span className="text-xl">{emoji}</span>
+          </Button>
         ))}
       </div>
 
       {/* Custom Emoji Input */}
       <div className="flex gap-2">
-        <input
+        <Input
           type="text"
           value={customEmoji}
           onChange={(e) => setCustomEmoji(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Dán emoji tùy chỉnh..."
-          className="flex-1 text-center"
+          placeholder="Paste custom emoji..."
           maxLength={4}
         />
-        <button
+        <Button
           type="button"
           onClick={handleCustomEmojiSubmit}
-          className="btn btn-primary px-4"
           disabled={!customEmoji.trim()}
         >
           OK
-        </button>
+        </Button>
       </div>
 
       {/* Close button */}
-      <button
+      <Button
         type="button"
         onClick={onClose}
-        className="w-full mt-3 text-sm text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-dark-text transition-colors"
+        variant="secondary"
+        className="w-full mt-3"
       >
-        Đóng
-      </button>
-    </div>
-  )
+        Close
+      </Button>
+    </Card>
+  );
 }

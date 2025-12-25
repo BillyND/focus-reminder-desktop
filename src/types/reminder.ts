@@ -75,8 +75,8 @@ export const PRESET_COLORS = [
 ];
 
 export const DURATION_OPTIONS = [
-  { value: 1, label: "1p" },
-  { value: 2, label: "2p" },
-  { value: 3, label: "3p" },
-  { value: 5, label: "5p" },
+  { value: 1, label: "1m" },
+  { value: 2, label: "2m" },
+  { value: 3, label: "3m" },
+  { value: 5, label: "5m" },
 ];

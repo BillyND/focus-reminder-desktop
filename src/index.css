@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 70% 50.4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -21,8 +77,6 @@ body {
     "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #ffffff;
-  color: #1f2937;
 }
 
 .dark body {
@@ -40,20 +94,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: hsl(var(--muted));
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #2a3a5a;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #3a4a6a;
+  background: hsl(var(--muted-foreground));
 }
 
 /* Title bar drag region */
@@ -63,152 +109,6 @@ body {
 
 .non-draggable {
   -webkit-app-region: no-drag;
-}
-
-/* Toggle switch */
-.toggle-switch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  background-color: #d1d5db;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.toggle-switch.active {
-  background-color: #3b82f6;
-}
-
-.dark .toggle-switch {
-  background-color: #2a3a5a;
-}
-
-.dark .toggle-switch.active {
-  background-color: #8b5cf6;
-}
-
-.toggle-switch::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  background-color: white;
-  border-radius: 50%;
-  transition: transform 0.2s ease;
-}
-
-.toggle-switch.active::after {
-  transform: translateX(20px);
-}
-
-/* Input styles */
-input,
-textarea,
-select {
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  color: #1f2937;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #3b82f6;
-}
-
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #16213e;
-  border: 1px solid #2a3a5a;
-  color: #e4e4e7;
-}
-
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  border-color: #8b5cf6;
-}
-
-textarea {
-  resize: none;
-}
-
-/* Button base */
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-size: 14px;
-}
-
-.btn-primary {
-  background-color: #8b5cf6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #7c3aed;
-}
-
-.btn-secondary {
-  background-color: #f3f4f6;
-  color: #1f2937;
-}
-
-.btn-secondary:hover {
-  background-color: #e5e7eb;
-}
-
-.dark .btn-secondary {
-  background-color: #2a3a5a;
-  color: #e4e4e7;
-}
-
-.dark .btn-secondary:hover {
-  background-color: #3a4a6a;
-}
-
-.btn-danger {
-  background-color: #ef4444;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
-}
-
-/* Card styles */
-.card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  background-color: #f9fafb;
-}
-
-.dark .card {
-  background-color: #16213e;
-  border-color: #2a3a5a;
-}
-
-.dark .card:hover {
-  background-color: #1f2b47;
 }
 
 /* Animation classes */

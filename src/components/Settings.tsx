@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { useSettingsStore } from "../store/settingsStore";
-import { useReminderStore } from "../store/reminderStore";
+import { useSettingsStore } from "@/store/settingsStore";
+import { useReminderStore } from "@/store/reminderStore";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Download, Upload, Trash2 } from "lucide-react";
 
 export default function Settings() {
   const { settings, toggleDarkMode, toggleSound, setSoundVolume } =
@@ -34,9 +40,9 @@ export default function Settings() {
         reader.onload = (event) => {
           const data = event.target?.result as string;
           if (importData(data)) {
-            alert("Nhập dữ liệu thành công!");
+            alert("Data imported successfully!");
           } else {
-            alert("Lỗi: Dữ liệu không hợp lệ!");
+            alert("Error: Invalid data!");
           }
         };
         reader.readAsText(file);
@@ -49,144 +55,113 @@ export default function Settings() {
     if (showResetConfirm) {
       resetAll();
       setShowResetConfirm(false);
-      alert("Đã đặt lại tất cả dữ liệu!");
+      alert("All data has been reset!");
     } else {
       setShowResetConfirm(true);
     }
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 bg-white dark:bg-dark-bg">
+    <div className="h-full overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Dark Mode */}
-        <div className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-200 dark:border-dark-border">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-1">
-                Giao diện tối
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-dark-muted">
-                Dễ nhìn hơn trong điều kiện ánh sáng yếu
+              <Label className="text-base font-semibold cursor-pointer">
+                Dark Mode
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Easier on the eyes in low light
               </p>
             </div>
-            <button
-              onClick={toggleDarkMode}
-              className={`toggle-switch ${settings.darkMode ? "active" : ""}`}
+            <Switch
+              checked={settings.darkMode}
+              onCheckedChange={toggleDarkMode}
               aria-label="Toggle dark mode"
             />
           </div>
-        </div>
+        </Card>
 
         {/* Notification Sound */}
-        <div className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-200 dark:border-dark-border">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-1">
-                Âm thanh thông báo
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-dark-muted">
-                Phát âm thanh khi hiển thị nhắc nhở
+              <Label className="text-base font-semibold cursor-pointer">
+                Notification Sound
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Play sound when showing reminders
               </p>
             </div>
-            <button
-              onClick={toggleSound}
-              className={`toggle-switch ${
-                settings.soundEnabled ? "active" : ""
-              }`}
+            <Switch
+              checked={settings.soundEnabled}
+              onCheckedChange={toggleSound}
               aria-label="Toggle sound"
             />
           </div>
-        </div>
+        </Card>
 
         {/* Sound Volume */}
         {settings.soundEnabled && (
-          <div className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-200 dark:border-dark-border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-1">
-                  Âm lượng thông báo
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-dark-muted">
-                  Điều chỉnh độ to của âm thanh
-                </p>
+          <Card className="p-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <Label className="text-base font-semibold">
+                    Notification Volume
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Adjust sound volume
+                  </p>
+                </div>
+                <span className="text-primary font-medium ml-4">
+                  {settings.soundVolume || 30}%
+                </span>
               </div>
-              <span className="text-blue-500 font-medium ml-4">
-                {settings.soundVolume || 30}%
-              </span>
+              <Slider
+                value={[settings.soundVolume || 30]}
+                onValueChange={(value) => setSoundVolume(value[0])}
+                max={100}
+                step={1}
+                className="w-full"
+              />
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={settings.soundVolume || 30}
-              onChange={(e) => setSoundVolume(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 dark:bg-dark-border rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-          </div>
+          </Card>
         )}
 
         {/* Data Management */}
-        <div className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-200 dark:border-dark-border">
-          <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
-            Quản lý dữ liệu
-          </h3>
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-4">Data Management</h3>
           <div className="space-y-3">
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handleExport}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 dark:bg-dark-hover rounded-lg text-gray-700 dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border transition-colors"
+                variant="outline"
+                className="flex-1"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-blue-500"
-                >
-                  <path d="M8 12L4 8H6V4H10V8H12L8 12Z" />
-                </svg>
-                <span className="font-medium">Xuất dữ liệu</span>
-              </button>
-              <button
+                <Download className="mr-2 h-4 w-4" />
+                Export Data
+              </Button>
+              <Button
                 onClick={handleImport}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 dark:bg-dark-hover rounded-lg text-gray-700 dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border transition-colors"
+                variant="outline"
+                className="flex-1"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-blue-500"
-                >
-                  <path d="M8 4L12 8H10V12H6V8H4L8 4Z" />
-                </svg>
-                <span className="font-medium">Nhập dữ liệu</span>
-              </button>
+                <Upload className="mr-2 h-4 w-4" />
+                Import Data
+              </Button>
             </div>
-            <button
+            <Button
               onClick={handleReset}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
+              variant="destructive"
+              className="w-full"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M4 4L12 12M4 12L12 4" />
-              </svg>
-              <span>
-                {showResetConfirm ? "Xác nhận đặt lại?" : "Đặt lại tất cả"}
-              </span>
-            </button>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {showResetConfirm ? "Confirm reset?" : "Reset All"}
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
