@@ -19,9 +19,9 @@ export const ReminderPreview = memo(function ReminderPreview({
     <>
       <span className="text-xs text-muted-foreground">
         {previewText} •{" "}
-        {formData.displayMinutes === 1
-          ? t("duration-minute", { minute: formData.displayMinutes })
-          : t("duration-minutes", { minute: formData.displayMinutes })}
+        {formData.displayMinutes > 1
+          ? t("duration-minutes", { duration: formData.displayMinutes })
+          : t("duration-minute", { duration: formData.displayMinutes })}
       </span>
     </>
   );
