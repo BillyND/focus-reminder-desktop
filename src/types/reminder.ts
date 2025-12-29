@@ -17,6 +17,7 @@ export interface AppSettings {
   soundEnabled: boolean;
   soundVolume?: number; // 0-100
   language?: string; // Language code (en, vi, fr, etc.)
+  autoLaunchEnabled: boolean;
 }
 
 export interface AppData {

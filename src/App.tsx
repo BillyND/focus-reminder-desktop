@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Toaster } from "react-hot-toast";
 import { useShallow } from "zustand/react/shallow";
 import { useReminderStore } from "@/store/reminderStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { TAB } from "@/constants";
 import Header from "@/components/Header";
 import TabNavigation from "@/components/TabNavigation";
@@ -18,6 +19,12 @@ function App() {
       editingReminder: state.editingReminder,
     }))
   );
+  const { autoLaunchEnabled, setAutoLaunchEnabled } = useSettingsStore(
+    useShallow((state) => ({
+      autoLaunchEnabled: state.settings.autoLaunchEnabled,
+      setAutoLaunchEnabled: state.setAutoLaunchEnabled,
+    }))
+  );
 
   useEffect(() => {
     // Sync all reminders when app starts - run async to not block render
@@ -28,6 +35,33 @@ function App() {
     };
     syncReminders();
   }, [syncAllReminders]);
+
+  useEffect(() => {
+    const syncAutoLaunchSetting = async () => {
+      if (!window.electronAPI?.setAutoLaunch) return;
+      try {
+        await window.electronAPI.setAutoLaunch(autoLaunchEnabled);
+      } catch (error) {
+        console.error("===> Failed to update auto-launch:", error);
+      }
+    };
+
+    syncAutoLaunchSetting();
+  }, [autoLaunchEnabled]);
+
+  useEffect(() => {
+    const fetchAutoLaunchStatus = async () => {
+      if (!window.electronAPI?.getAutoLaunchStatus) return;
+      try {
+        const enabled = await window.electronAPI.getAutoLaunchStatus();
+        setAutoLaunchEnabled(enabled);
+      } catch (error) {
+        console.error("===> Failed to fetch auto-launch status:", error);
+      }
+    };
+
+    fetchAutoLaunchStatus();
+  }, [setAutoLaunchEnabled]);
 
   const content = useMemo(() => {
     switch (activeTab) {

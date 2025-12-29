@@ -7,16 +7,19 @@ import { useReminderStore } from "@/store/reminderStore";
 import { FILE_NAMES } from "@/constants";
 import { SettingsSoundSection } from "./SettingsSoundSection";
 import { SettingsDataSection } from "./SettingsDataSection";
+import { SettingsStartupSection } from "./SettingsStartupSection";
 
 export default memo(function Settings() {
   const { t } = useTranslation();
-  const { settings, toggleSound, setSoundVolume } = useSettingsStore(
-    useShallow((state) => ({
-      settings: state.settings,
-      toggleSound: state.toggleSound,
-      setSoundVolume: state.setSoundVolume,
-    }))
-  );
+  const { settings, toggleSound, setSoundVolume, toggleAutoLaunch } =
+    useSettingsStore(
+      useShallow((state) => ({
+        settings: state.settings,
+        toggleSound: state.toggleSound,
+        setSoundVolume: state.setSoundVolume,
+        toggleAutoLaunch: state.toggleAutoLaunch,
+      }))
+    );
   const { exportData, importData, resetAll } = useReminderStore(
     useShallow((state) => ({
       exportData: state.exportData,
@@ -70,6 +73,10 @@ export default memo(function Settings() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto space-y-6">
+        <SettingsStartupSection
+          autoLaunchEnabled={settings.autoLaunchEnabled}
+          onToggleAutoLaunch={toggleAutoLaunch}
+        />
         <SettingsSoundSection
           soundEnabled={settings.soundEnabled}
           soundVolume={settings.soundVolume}

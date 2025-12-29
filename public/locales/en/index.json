@@ -67,6 +67,8 @@
   "vietnamese": "Vietnamese",
   "language": "Language",
   "duration-minute": "{{duration}} minute",
-  "duration-minutes": "{{duration}} minutes"
+  "duration-minutes": "{{duration}} minutes",
+  "launch-on-startup": "Launch on system startup",
+  "launch-on-startup-description": "Keep Focus Reminder running automatically when your computer boots"
 }
 

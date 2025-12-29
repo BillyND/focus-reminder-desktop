@@ -14,6 +14,8 @@ interface SettingsStore {
   setSoundVolume: (volume: number) => void;
   setShowSettings: (show: boolean) => void;
   setLanguage: (language: string) => Promise<void>;
+  toggleAutoLaunch: () => void;
+  setAutoLaunchEnabled: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -30,6 +32,7 @@ export const useSettingsStore = create<SettingsStore>()(
           soundEnabled: true,
           soundVolume: DEFAULTS.SOUND_VOLUME,
           language: "en",
+          autoLaunchEnabled: true,
         },
         showSettings: false,
 
@@ -62,6 +65,19 @@ export const useSettingsStore = create<SettingsStore>()(
             settings: { ...state.settings, language },
           }));
         },
+
+        toggleAutoLaunch: () =>
+          set((state) => ({
+            settings: {
+              ...state.settings,
+              autoLaunchEnabled: !state.settings.autoLaunchEnabled,
+            },
+          })),
+
+        setAutoLaunchEnabled: (enabled) =>
+          set((state) => ({
+            settings: { ...state.settings, autoLaunchEnabled: enabled },
+          })),
       };
     },
     {

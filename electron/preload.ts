@@ -47,6 +47,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   playNotificationSound: (volume: number) =>
     ipcRenderer.send("play-notification-sound", volume),
   stopNotificationSound: () => ipcRenderer.send("stop-notification-sound"),
+
+  // Startup
+  setAutoLaunch: (enabled: boolean) =>
+    ipcRenderer.invoke("set-auto-launch", enabled),
+  getAutoLaunchStatus: () => ipcRenderer.invoke("get-auto-launch-status"),
 });
 
 // Type declarations for window.electronAPI
@@ -75,6 +80,8 @@ declare global {
       closeOverlayByReminderId: (reminderId: string) => void;
       playNotificationSound: (volume: number) => void;
       stopNotificationSound: () => void;
+      setAutoLaunch: (enabled: boolean) => Promise<boolean>;
+      getAutoLaunchStatus: () => Promise<boolean>;
     };
   }
 }

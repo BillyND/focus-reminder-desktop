@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { app, ipcMain } from "electron";
 import { Reminder } from "../types";
 import {
   scheduleReminder,
@@ -82,6 +82,20 @@ export function registerIpcHandlers(): void {
 
   ipcMain.on("window-close", () => {
     hideMainWindow();
+  });
+
+  ipcMain.handle("set-auto-launch", (_, enabled: boolean) => {
+    const exePath = app.getPath("exe");
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+      path: exePath,
+    });
+
+    return app.getLoginItemSettings().openAtLogin;
+  });
+
+  ipcMain.handle("get-auto-launch-status", () => {
+    return app.getLoginItemSettings().openAtLogin;
   });
 }
 
